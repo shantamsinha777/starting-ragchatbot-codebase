@@ -111,6 +111,33 @@ header h1 {
     margin-bottom: 0;
 }
 
+/* Old sidebar-button CSS - kept for reference but not used */
+/*.sidebar-button {
+    width: 100%;
+    padding: 0.875rem 1.25rem;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.2s ease;
+}
+
+.sidebar-button:hover {
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.sidebar-button:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--focus-ring);
+}*/
+
 /* Main Chat Area */
 .chat-main {
     flex: 1;
@@ -242,7 +269,58 @@ header h1 {
 
 .sources-content {
     padding: 0 0.5rem 0.25rem 1.5rem;
-    color: var(--text-secondary);
+    color: var(--text-primary); /* Use primary text color for better readability */
+    line-height: 1.4; /* Better line spacing */
+    font-size: 0.875rem; /* Slightly larger text */
+}
+
+/* Style links in sources section */
+.sources-content a,
+.details[open] .sources-content a,
+.sources-content a:link,
+.sources-content a:visited,
+.sources-content a:active {
+    color: var(--text-primary) !important; /* Use primary text color for better contrast */
+    text-decoration: none !important; /* Remove underline for cleaner look */
+    cursor: pointer;
+    border-bottom: 1px dashed var(--text-secondary) !important; /* Subtle dashed underline */
+    padding-bottom: 1px; /* Add slight padding for better appearance */
+    transition: all 0.2s ease; /* Smooth hover transition */
+    background-color: rgba(255, 255, 255, 0.05) !important; /* Subtle background highlight */
+    padding: 2px 4px; /* Add padding for better click target */
+    border-radius: 3px; /* Slight rounding */
+    font-weight: 500 !important; /* Make text slightly bolder */
+    opacity: 1 !important; /* Ensure full opacity */
+}
+
+.sources-content a:hover {
+    color: var(--primary-color) !important; /* Change to primary color on hover */
+    border-bottom: 1px solid var(--primary-color) !important; /* Solid underline on hover */
+    text-decoration: none !important;
+    background-color: rgba(255, 255, 255, 0.1) !important; /* Stronger background on hover */
+}
+
+/* Add spacing between multiple links */
+.sources-content a + a {
+    margin-left: 0.5rem; /* Add spacing between consecutive links */
+}
+
+/* Specific class for source links to ensure styling takes precedence */
+.sources-content .source-link {
+    color: var(--text-primary) !important;
+    text-decoration: none !important;
+    border-bottom: 1px dashed var(--text-secondary) !important;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-weight: 500 !important;
+    background-color: rgba(255, 255, 255, 0.05) !important;
+    transition: all 0.2s ease;
+}
+
+.sources-content .source-link:hover {
+    color: var(--primary-color) !important;
+    border-bottom: 1px solid var(--primary-color) !important;
+    background-color: rgba(255, 255, 255, 0.1) !important;
 }
 
 /* Markdown formatting styles */
@@ -520,6 +598,34 @@ details[open] .suggested-header::before {
     font-weight: 600;
     color: var(--primary-color);
     margin-left: 0.5rem;
+}
+
+/* New Chat Header - Matches sidebar section headers */
+.new-chat-header {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 0.5rem 0;
+    background: none;
+    border: none;
+    list-style: none;
+    outline: none;
+    transition: color 0.2s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    text-align: left;
+    width: 100%;
+    font-family: inherit;
+}
+
+.new-chat-header:focus,
+.new-chat-header:hover {
+    color: var(--primary-color);
+}
+
+.new-chat-header::-moz-focus-inner {
+    border: 0;
 }
 
 .stat-label {

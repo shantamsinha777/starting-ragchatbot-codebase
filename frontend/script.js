@@ -28,8 +28,13 @@ function setupEventListeners() {
     chatInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') sendMessage();
     });
-    
-    
+
+    // New Chat button
+    const newChatBtn = document.getElementById('newChatBtn');
+    if (newChatBtn) {
+        newChatBtn.addEventListener('click', createNewSession);
+    }
+
     // Suggested questions
     document.querySelectorAll('.suggested-item').forEach(button => {
         button.addEventListener('click', (e) => {
@@ -122,10 +127,27 @@ function addMessage(content, type, sources = null, isWelcome = false) {
     let html = `<div class="message-content">${displayContent}</div>`;
     
     if (sources && sources.length > 0) {
+        // Parse markdown format [text](url) and convert to clickable <a> tags
+        // Also handle HTML links directly from backend
+        const parsedSources = sources.map(s => {
+            // Check if it's already HTML (contains <a> tag)
+            if (s.includes('<a ') && s.includes('</a>')) {
+                return s; // Return HTML as-is
+            }
+            // Check for markdown format [text](url)
+            const match = s.match(/\[([^\]]+)\]\(([^)]+)\)/);
+            if (match) {
+                const text = match[1];
+                const url = match[2];
+                return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="source-link">${text}</a>`;
+            }
+            return s; // Return as-is if no match
+        }).join(', ');
+
         html += `
             <details class="sources-collapsible">
                 <summary class="sources-header">Sources</summary>
-                <div class="sources-content">${sources.join(', ')}</div>
+                <div class="sources-content">${parsedSources}</div>
             </details>
         `;
     }
@@ -146,10 +168,12 @@ function escapeHtml(text) {
 
 // Removed removeMessage function - no longer needed since we handle loading differently
 
-async function createNewSession() {
+function createNewSession() {
     currentSessionId = null;
-    chatMessages.innerHTML = '';
-    addMessage('Welcome to the Course Materials Assistant! I can help you with questions about courses, lessons and specific content. What would you like to know?', 'assistant', null, true);
+    if (chatMessages) {
+        chatMessages.innerHTML = '';
+        addMessage('Welcome to the Course Materials Assistant! I can help you with questions about courses, lessons and specific content. What would you like to know?', 'assistant', null, true);
+    }
 }
 
 // Load course statistics
