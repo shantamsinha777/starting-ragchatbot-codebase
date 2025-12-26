@@ -61,17 +61,25 @@ async def query_documents(request: QueryRequest):
         session_id = request.session_id
         if not session_id:
             session_id = rag_system.session_manager.create_session()
-        
+
+        print(f"[DEBUG] Processing query: {request.query}")
+        print(f"[DEBUG] Session ID: {session_id}")
+
         # Process query using RAG system
         answer, sources = rag_system.query(request.query, session_id)
-        
+
+        print(f"[DEBUG] Response generated: {answer[:100]}...")
+
         return QueryResponse(
             answer=answer,
             sources=sources,
             session_id=session_id
         )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(f"[ERROR] Query failed with: {type(e).__name__}: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"{type(e).__name__}: {e}")
 
 @app.get("/api/courses", response_model=CourseStats)
 async def get_course_stats():

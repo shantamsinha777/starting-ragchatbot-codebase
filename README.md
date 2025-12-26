@@ -4,14 +4,14 @@ A Retrieval-Augmented Generation (RAG) system designed to answer questions about
 
 ## Overview
 
-This application is a full-stack web application that enables users to query course materials and receive intelligent, context-aware responses. It uses ChromaDB for vector storage, Anthropic's Claude for AI generation, and provides a web interface for interaction.
+This application is a full-stack web application that enables users to query course materials and receive intelligent, context-aware responses. It uses ChromaDB for vector storage, OpenRouter with MiMo V2 Flash for AI generation, and provides a web interface for interaction.
 
 
 ## Prerequisites
 
 - Python 3.13 or higher
 - uv (Python package manager)
-- An Anthropic API key (for Claude AI)
+- An OpenRouter API key (for MiMo V2 Flash model)
 - **For Windows**: Use Git Bash to run the application commands - [Download Git for Windows](https://git-scm.com/downloads/win)
 
 ## Installation
@@ -27,10 +27,11 @@ This application is a full-stack web application that enables users to query cou
    ```
 
 3. **Set up environment variables**
-   
+
    Create a `.env` file in the root directory:
    ```bash
-   ANTHROPIC_API_KEY=your_anthropic_api_key_here
+   OPENROUTER_API_KEY=your_openrouter_api_key_here
+   OPENROUTER_MODEL=xiaomi/mimo-v2-flash
    ```
 
 ## Running the Application
@@ -53,4 +54,12 @@ uv run uvicorn app:app --reload --port 8000
 The application will be available at:
 - Web Interface: `http://localhost:8000`
 - API Documentation: `http://localhost:8000/docs`
+
+## Configuration
+
+You can customize the OpenRouter model by setting:
+```bash
+OPENROUTER_MODEL=anthropic/claude-3.5-sonnet  # Use Claude via OpenRouter
+OPENROUTER_MODEL=meta-llama/llama-3.2-3b-instruct  # Use Llama
+```
 

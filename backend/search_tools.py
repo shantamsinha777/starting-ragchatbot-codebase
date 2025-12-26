@@ -25,7 +25,7 @@ class CourseSearchTool(Tool):
         self.last_sources = []  # Track sources from last search
     
     def get_tool_definition(self) -> Dict[str, Any]:
-        """Return Anthropic tool definition for this tool"""
+        """Return tool definition - format that can be converted to either provider"""
         return {
             "name": "search_course_content",
             "description": "Search course materials with smart course name matching and lesson filtering",
@@ -33,7 +33,7 @@ class CourseSearchTool(Tool):
                 "type": "object",
                 "properties": {
                     "query": {
-                        "type": "string", 
+                        "type": "string",
                         "description": "What to search for in the course content"
                     },
                     "course_name": {
