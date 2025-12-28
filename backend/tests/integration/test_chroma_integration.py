@@ -45,7 +45,8 @@ class TestChromaIntegration(unittest.TestCase):
         """Setup with real ChromaDB if available, otherwise use mock"""
         if not REAL_CHROMADB_AVAILABLE:
             print(
-                "ℹ️  Using mock ChromaDB - install chromadb and sentence-transformers for real tests"
+                "ℹ️  Using mock ChromaDB - install chromadb and "
+                "sentence-transformers for real tests"
             )
 
     def setUp(self):
@@ -62,7 +63,6 @@ class TestChromaIntegration(unittest.TestCase):
         """Test actual vector similarity search"""
         # Add a test document
         test_content = "This is a test document for vector search."
-        metadata = {"course_title": "Test Course", "lesson_number": 1}
 
         # Add content to vector store
         from models import CourseChunk

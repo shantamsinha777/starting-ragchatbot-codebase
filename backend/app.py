@@ -6,6 +6,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from typing import List, Optional
 import os
@@ -111,10 +112,6 @@ async def startup_event():
 
 
 # Custom static file handler with no-cache headers for development
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
-import os
-from pathlib import Path
 
 
 class DevStaticFiles(StaticFiles):

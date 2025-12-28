@@ -54,6 +54,7 @@ testpaths = ["backend/tests"]
 python_files = ["test_*.py", "*_test.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
+asyncio_mode = "auto"
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
     "integration: marks tests as integration tests",
@@ -61,6 +62,7 @@ markers = [
     "unit: marks tests as unit tests",
     "mock: marks tests that use mocking",
     "real_api: marks tests that make real API calls",
+    "asyncio: marks tests as asyncio",
 ]
 log_cli = true
 log_cli_level = "INFO"

@@ -186,7 +186,11 @@ class MockChatCompletionsEnhanced:
                 MockChoice(
                     finish_reason="stop",
                     message=MockMessage(
-                        content="Based on the course outline and content search, Python Basics Lesson 4 covers Advanced Python topics. The Data Structures Mastery course also discusses similar concepts."
+                        content=(
+                            "Based on the course outline and content search, "
+                            "Python Basics Lesson 4 covers Advanced Python topics. "
+                            "The Data Structures Mastery course also discusses similar concepts."
+                        ),
                     ),
                 )
             ]

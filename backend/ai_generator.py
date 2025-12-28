@@ -7,7 +7,8 @@ class AIGenerator:
     """Handles interactions with OpenRouter API (OpenAI format) for generating responses"""
 
     # Static system prompt to avoid rebuilding on each call
-    SYSTEM_PROMPT = """You are an AI assistant specialized in course materials and educational content with access to comprehensive search tools.
+    SYSTEM_PROMPT = """You are an AI assistant specialized in course materials and
+educational content with access to comprehensive search tools.
 
 ## Sequential Tool Usage (Up to 2 Rounds)
 
@@ -154,7 +155,7 @@ Final Answer:
 
                 # Check termination conditions
                 if tool_rounds >= 2:
-                    print(f"[AI_DEBUG] Max rounds (2) reached, breaking to synthesis")
+                    print("[AI_DEBUG] Max rounds (2) reached, breaking to synthesis")
                     break
 
                 # Continue to next round (tools still available)
@@ -166,7 +167,7 @@ Final Answer:
 
         # 4. If tools were used, make final synthesis call (no tools)
         if tools_used:
-            print(f"[AI_DEBUG] Making final synthesis call")
+            print("[AI_DEBUG] Making final synthesis call")
             return self._make_synthesis_call(full_message_history)
 
         # Fallback (shouldn't reach here)

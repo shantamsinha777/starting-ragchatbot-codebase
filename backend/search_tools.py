@@ -28,7 +28,8 @@ class CourseSearchTool(Tool):
         """Return tool definition - format that can be converted to either provider"""
         return {
             "name": "search_course_content",
-            "description": "Search course materials with smart course name matching and lesson filtering",
+            "description": "Search course materials with smart course name matching "
+            "and lesson filtering",
             "input_schema": {
                 "type": "object",
                 "properties": {
@@ -38,7 +39,8 @@ class CourseSearchTool(Tool):
                     },
                     "course_name": {
                         "type": "string",
-                        "description": "Course title (partial matches work, e.g. 'MCP', 'Introduction')",
+                        "description": "Course title (partial matches work, e.g. "
+                        "'MCP', 'Introduction')",
                     },
                     "lesson_number": {
                         "type": "integer",
@@ -109,7 +111,10 @@ class CourseSearchTool(Tool):
                 lesson_link = self.store.get_lesson_link(course_title, lesson_num)
                 if lesson_link:
                     # Format as HTML link with display text
-                    source = f'<a href="{lesson_link}" target="_blank" rel="noopener noreferrer">{source_display}</a>'
+                    source = (
+                        f'<a href="{lesson_link}" target="_blank" '
+                        f'rel="noopener noreferrer">{source_display}</a>'
+                    )
                 else:
                     source = source_display
             else:
@@ -135,13 +140,19 @@ class CourseOutlineTool(Tool):
         """Return tool definition - format that can be converted to either provider"""
         return {
             "name": "get_course_outline",
-            "description": "Retrieve course outline information including course title, course link, and complete lesson list. Use this when users ask for course structure, table of contents, lesson listings, or course overviews.",
+            "description": (
+                "Retrieve course outline information including course title, "
+                "course link, and complete lesson list. Use this when users ask "
+                "for course structure, table of contents, lesson listings, "
+                "or course overviews."
+            ),
             "input_schema": {
                 "type": "object",
                 "properties": {
                     "course_name": {
                         "type": "string",
-                        "description": "Course title (partial matches work, e.g. 'MCP', 'Introduction')",
+                        "description": "Course title (partial matches work, e.g. "
+                        "'MCP', 'Introduction')",
                     }
                 },
                 "required": ["course_name"],

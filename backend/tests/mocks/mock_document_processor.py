@@ -72,7 +72,6 @@ class DocumentProcessor:
         # Find lesson content and create chunks
         lesson_content = []
         in_lesson = False
-        current_lesson_title = ""
 
         for line in lines:
             if line.startswith("Lesson ") and ":" in line:
@@ -84,7 +83,6 @@ class DocumentProcessor:
                         lesson_chunks = self._chunk_text_enhanced(lesson_text, course_title)
                         chunks.extend(lesson_chunks)
                     lesson_content = []
-                current_lesson_title = line.strip()
                 in_lesson = True
             elif in_lesson and line.strip():
                 lesson_content.append(line)

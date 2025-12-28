@@ -3,7 +3,6 @@ from chromadb.config import Settings
 from typing import List, Dict, Any, Optional
 from dataclasses import dataclass
 from models import Course, CourseChunk
-from sentence_transformers import SentenceTransformer
 
 
 @dataclass

@@ -46,7 +46,9 @@ class TestSessionManagement(unittest.TestCase):
 
         # Should only contain the last 2 exchanges (MAX_HISTORY)
         lines = history.split("\n")
-        self.assertLessEqual(len([l for l in lines if l.strip()]), 4)  # 2 exchanges = 4 lines
+        self.assertLessEqual(
+            len([line for line in lines if line.strip()]), 4
+        )  # 2 exchanges = 4 lines
 
     def test_session_cleanup(self):
         """Test cleanup of old sessions"""

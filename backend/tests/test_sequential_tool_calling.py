@@ -17,7 +17,7 @@ import os
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
 # Mock the openai module
-from tests.mocks.mock_openai import *
+from tests.mocks.mock_openai import OpenAI
 
 sys.modules["openai"] = sys.modules["__main__"]
 
@@ -227,7 +227,7 @@ class TestSequentialToolCalling(unittest.TestCase):
         # Add initial history
         history = "User: Previous question\nAssistant: Previous answer"
 
-        response = self.ai_generator.generate_response(
+        self.ai_generator.generate_response(
             query="New question",
             conversation_history=history,
             tools=self.tool_manager.get_tool_definitions(),
