@@ -3,7 +3,7 @@ import sys
 import os
 
 # Add the backend directory to the path so we can import the modules
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
 # Mock the openai module before importing rag_system
 # Read the mock file content and execute it
@@ -11,20 +11,21 @@ with open("tests/mocks/mock_openai.py", "r") as f:
     mock_code = f.read()
 
 # Create a new module and execute the code in its namespace
-openai = type(sys)('openai')
-sys.modules['openai'] = openai
+openai = type(sys)("openai")
+sys.modules["openai"] = openai
 exec(mock_code, openai.__dict__)
 
 # Mock the vector_store module to avoid chromadb and sentence-transformers dependencies
 with open("tests/mocks/mock_vector_store_module.py", "r") as f:
     vector_store_code = f.read()
 
-vector_store = type(sys)('vector_store')
-sys.modules['vector_store'] = vector_store
+vector_store = type(sys)("vector_store")
+sys.modules["vector_store"] = vector_store
 exec(vector_store_code, vector_store.__dict__)
 
 from rag_system import RAGSystem
 from tests.mocks.mock_session_manager import MockSessionManager
+
 
 class TestRAGSystem(unittest.TestCase):
     """Comprehensive tests for RAG system content-query handling"""
@@ -32,16 +33,20 @@ class TestRAGSystem(unittest.TestCase):
     def setUp(self):
         """Set up test fixtures"""
         # Create mock configuration
-        self.config = type('Config', (), {
-            'OPENROUTER_API_KEY': 'test-key',
-            'OPENROUTER_MODEL': 'test-model',
-            'CHROMA_PATH': './test_chroma',
-            'EMBEDDING_MODEL': 'test-embedding',
-            'CHUNK_SIZE': 800,
-            'CHUNK_OVERLAP': 100,
-            'MAX_RESULTS': 5,
-            'MAX_HISTORY': 2
-        })()
+        self.config = type(
+            "Config",
+            (),
+            {
+                "OPENROUTER_API_KEY": "test-key",
+                "OPENROUTER_MODEL": "test-model",
+                "CHROMA_PATH": "./test_chroma",
+                "EMBEDDING_MODEL": "test-embedding",
+                "CHUNK_SIZE": 800,
+                "CHUNK_OVERLAP": 100,
+                "MAX_RESULTS": 5,
+                "MAX_HISTORY": 2,
+            },
+        )()
 
         # Create RAG system with mock components
         self.rag_system = RAGSystem(self.config)
@@ -123,9 +128,7 @@ class TestRAGSystem(unittest.TestCase):
 
         # Add some history first
         self.rag_system.session_manager.add_exchange(
-            session_id,
-            "What is the first topic?",
-            "The first topic is introduction"
+            session_id, "What is the first topic?", "The first topic is introduction"
         )
 
         # Execute new query with session
@@ -244,18 +247,14 @@ class TestRAGSystem(unittest.TestCase):
 
         # Add many exchanges to test history limit
         for i in range(10):
-            self.rag_system.session_manager.add_exchange(
-                session_id,
-                f"Question {i}",
-                f"Answer {i}"
-            )
+            self.rag_system.session_manager.add_exchange(session_id, f"Question {i}", f"Answer {i}")
 
         # Get history - should be limited
         history = self.rag_system.session_manager.get_conversation_history(session_id)
         self.assertIsNotNone(history)
 
         # Count lines to verify limit
-        lines = history.split('\n')
+        lines = history.split("\n")
         self.assertLessEqual(len(lines), self.config.MAX_HISTORY * 2)
 
     def test_course_analytics_with_empty_database(self):
@@ -292,5 +291,6 @@ class TestRAGSystem(unittest.TestCase):
 
         self.assertIsInstance(response, str)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

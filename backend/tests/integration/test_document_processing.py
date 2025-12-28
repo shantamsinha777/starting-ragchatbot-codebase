@@ -5,17 +5,18 @@ import os
 import sys
 
 # Add the backend directory to the path so we can import the modules
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 
 # Mock the document_processor module to avoid pydantic dependency
 with open("tests/mocks/mock_document_processor.py", "r") as f:
     mock_doc_code = f.read()
 
-document_processor = type(sys)('document_processor')
-sys.modules['document_processor'] = document_processor
+document_processor = type(sys)("document_processor")
+sys.modules["document_processor"] = document_processor
 exec(mock_doc_code, document_processor.__dict__)
 
 from document_processor import DocumentProcessor
+
 
 class TestDocumentProcessing(unittest.TestCase):
     """Integration tests for document processing pipeline"""
@@ -34,8 +35,9 @@ class TestDocumentProcessing(unittest.TestCase):
         """Test processing of TXT files"""
         # Create test TXT file
         txt_path = os.path.join(self.temp_dir, "test_course.txt")
-        with open(txt_path, 'w') as f:
-            f.write("""Course Title: Test Course
+        with open(txt_path, "w") as f:
+            f.write(
+                """Course Title: Test Course
 Course Link: https://example.com/course
 Course Instructor: Test Instructor
 
@@ -44,7 +46,8 @@ This is the introduction content.
 
 Lesson 2: Advanced Topics
 This is advanced content.
-""")
+"""
+            )
 
         # Process the document
         course, chunks = self.processor.process_course_document(txt_path)
@@ -59,13 +62,15 @@ This is advanced content.
         # Create a large document
         large_content = "Lesson 1: Long Content\n" + ("This is a sentence. " * 1000)
         txt_path = os.path.join(self.temp_dir, "large_course.txt")
-        with open(txt_path, 'w') as f:
-            f.write(f"""Course Title: Large Course
+        with open(txt_path, "w") as f:
+            f.write(
+                f"""Course Title: Large Course
 Course Link: https://example.com/large
 Course Instructor: Test Instructor
 
 {large_content}
-""")
+"""
+            )
 
         course, chunks = self.processor.process_course_document(txt_path)
 
@@ -78,7 +83,7 @@ Course Instructor: Test Instructor
         """Test handling of malformed documents"""
         # Create incomplete document
         txt_path = os.path.join(self.temp_dir, "malformed.txt")
-        with open(txt_path, 'w') as f:
+        with open(txt_path, "w") as f:
             f.write("This is not a proper course document format.")
 
         course, chunks = self.processor.process_course_document(txt_path)
@@ -91,7 +96,7 @@ Course Instructor: Test Instructor
         """Test handling of empty documents"""
         # Create empty document
         txt_path = os.path.join(self.temp_dir, "empty.txt")
-        with open(txt_path, 'w') as f:
+        with open(txt_path, "w") as f:
             f.write("")
 
         course, chunks = self.processor.process_course_document(txt_path)
@@ -104,12 +109,14 @@ Course Instructor: Test Instructor
         """Test document with missing required fields"""
         # Create document without course title
         txt_path = os.path.join(self.temp_dir, "missing_fields.txt")
-        with open(txt_path, 'w') as f:
-            f.write("""Course Instructor: Test Instructor
+        with open(txt_path, "w") as f:
+            f.write(
+                """Course Instructor: Test Instructor
 
 Lesson 1: Introduction
 This is some content.
-""")
+"""
+            )
 
         course, chunks = self.processor.process_course_document(txt_path)
 
@@ -121,8 +128,9 @@ This is some content.
         """Test document with many lessons"""
         # Create document with multiple lessons
         txt_path = os.path.join(self.temp_dir, "multi_lesson.txt")
-        with open(txt_path, 'w') as f:
-            f.write("""Course Title: Multi-Lesson Course
+        with open(txt_path, "w") as f:
+            f.write(
+                """Course Title: Multi-Lesson Course
 Course Link: https://example.com/multi
 Course Instructor: Test Instructor
 
@@ -140,7 +148,8 @@ Advanced content here.
 
 Lesson 5: Conclusion
 Conclusion content here.
-""")
+"""
+            )
 
         course, chunks = self.processor.process_course_document(txt_path)
 
@@ -151,8 +160,9 @@ Conclusion content here.
     def test_document_with_special_characters(self):
         """Test document containing special characters"""
         txt_path = os.path.join(self.temp_dir, "special_chars.txt")
-        with open(txt_path, 'w') as f:
-            f.write("""Course Title: Special Characters Course
+        with open(txt_path, "w") as f:
+            f.write(
+                """Course Title: Special Characters Course
 Course Link: https://example.com/special
 Course Instructor: Test Instructor
 
@@ -160,7 +170,8 @@ Lesson 1: Special Characters
 This lesson contains special characters: !@#$%^&*()
 And Unicode: 你好世界 🌍
 And math: ∑∫∆∇∂∀∃∞≈≠≤≥
-""")
+"""
+            )
 
         course, chunks = self.processor.process_course_document(txt_path)
 
@@ -173,8 +184,9 @@ And math: ∑∫∆∇∂∀∃∞≈≠≤≥
     def test_document_with_urls_and_emails(self):
         """Test document containing URLs and email addresses"""
         txt_path = os.path.join(self.temp_dir, "urls_emails.txt")
-        with open(txt_path, 'w') as f:
-            f.write("""Course Title: URLs and Emails Course
+        with open(txt_path, "w") as f:
+            f.write(
+                """Course Title: URLs and Emails Course
 Course Link: https://example.com/urls
 Course Instructor: Test Instructor
 
@@ -182,7 +194,8 @@ Lesson 1: Contact Information
 Contact us at email@example.com
 Visit our website at https://example.com
 Check out our API at https://api.example.com/v1
-""")
+"""
+            )
 
         course, chunks = self.processor.process_course_document(txt_path)
 
@@ -196,8 +209,9 @@ Check out our API at https://api.example.com/v1
     def test_document_with_code_samples(self):
         """Test document containing code samples"""
         txt_path = os.path.join(self.temp_dir, "code_samples.txt")
-        with open(txt_path, 'w') as f:
-            f.write("""Course Title: Code Samples Course
+        with open(txt_path, "w") as f:
+            f.write(
+                """Course Title: Code Samples Course
 Course Link: https://example.com/code
 Course Instructor: Test Instructor
 
@@ -215,7 +229,8 @@ function helloWorld() {
     console.log("Hello, World!");
     return true;
 }
-""")
+"""
+            )
 
         course, chunks = self.processor.process_course_document(txt_path)
 
@@ -236,14 +251,16 @@ function helloWorld() {
         """Test chunking behavior at sentence boundaries"""
         # Create document with content that should be chunked at sentence boundaries
         txt_path = os.path.join(self.temp_dir, "boundary_test.txt")
-        with open(txt_path, 'w') as f:
-            f.write("""Course Title: Boundary Test Course
+        with open(txt_path, "w") as f:
+            f.write(
+                """Course Title: Boundary Test Course
 Course Link: https://example.com/boundary
 Course Instructor: Test Instructor
 
 Lesson 1: Boundary Testing
 This is the first sentence. This is the second sentence. This is the third sentence. This is the fourth sentence. This is the fifth sentence. This is the sixth sentence. This is the seventh sentence. This is the eighth sentence. This is the ninth sentence. This is the tenth sentence.
-""")
+"""
+            )
 
         course, chunks = self.processor.process_course_document(txt_path)
 
@@ -254,5 +271,6 @@ This is the first sentence. This is the second sentence. This is the third sente
             # Check that sentences are complete (not broken in middle)
             self.assertNotIn("sentence. This", chunk.content)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

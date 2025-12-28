@@ -10,41 +10,45 @@ from dataclasses import dataclass
 
 # Import mock models instead of real ones
 import sys
+
 with open("tests/mocks/mock_models.py", "r") as f:
     models_code = f.read()
 
-models = type(sys)('models')
-sys.modules['models'] = models
+models = type(sys)("models")
+sys.modules["models"] = models
 exec(models_code, models.__dict__)
 
 Course = models.Course
 CourseChunk = models.CourseChunk
 
+
 @dataclass
 class SearchResults:
     """Container for search results with metadata"""
+
     documents: List[str]
     metadata: List[Dict[str, Any]]
     distances: List[float]
     error: Optional[str] = None
 
     @classmethod
-    def from_chroma(cls, chroma_results: Dict) -> 'SearchResults':
+    def from_chroma(cls, chroma_results: Dict) -> "SearchResults":
         """Create SearchResults from ChromaDB query results"""
         return cls(
-            documents=chroma_results['documents'][0] if chroma_results['documents'] else [],
-            metadata=chroma_results['metadatas'][0] if chroma_results['metadatas'] else [],
-            distances=chroma_results['distances'][0] if chroma_results['distances'] else []
+            documents=chroma_results["documents"][0] if chroma_results["documents"] else [],
+            metadata=chroma_results["metadatas"][0] if chroma_results["metadatas"] else [],
+            distances=chroma_results["distances"][0] if chroma_results["distances"] else [],
         )
 
     @classmethod
-    def empty(cls, error_msg: str) -> 'SearchResults':
+    def empty(cls, error_msg: str) -> "SearchResults":
         """Create empty results with error message"""
         return cls(documents=[], metadata=[], distances=[], error=error_msg)
 
     def is_empty(self) -> bool:
         """Check if results are empty"""
         return len(self.documents) == 0
+
 
 class VectorStore:
     """Mock VectorStore that doesn't require chromadb or sentence-transformers"""
@@ -60,7 +64,7 @@ class VectorStore:
         query: str,
         course_name: Optional[str] = None,
         lesson_number: Optional[int] = None,
-        limit: Optional[int] = None
+        limit: Optional[int] = None,
     ) -> SearchResults:
         """Mock search implementation that returns added content when possible"""
         # Check if we should return empty results based on query
@@ -76,55 +80,48 @@ class VectorStore:
             # Simple mock similarity - return chunks that contain query words
             matching_chunks = []
             query_words = query.lower().split()
-            
+
             for chunk in self.content_chunks:
                 chunk_words = chunk.content.lower().split()
                 # Check if any query words appear in the chunk
                 if any(word in chunk_words for word in query_words):
                     matching_chunks.append(chunk)
-            
+
             if matching_chunks:
                 # Return the matching chunks
-                documents = [chunk.content for chunk in matching_chunks[:self.max_results]]
+                documents = [chunk.content for chunk in matching_chunks[: self.max_results]]
                 metadata = [
                     {
-                        'course_title': chunk.course_title,
-                        'lesson_number': chunk.lesson_number or 1,
-                        'lesson_link': f'https://example.com/{chunk.course_title}/lesson{chunk.lesson_number or 1}'
-                    } for chunk in matching_chunks[:self.max_results]
+                        "course_title": chunk.course_title,
+                        "lesson_number": chunk.lesson_number or 1,
+                        "lesson_link": f"https://example.com/{chunk.course_title}/lesson{chunk.lesson_number or 1}",
+                    }
+                    for chunk in matching_chunks[: self.max_results]
                 ]
                 distances = [0.1] * len(documents)
-                
-                return SearchResults(
-                    documents=documents,
-                    metadata=metadata,
-                    distances=distances
-                )
+
+                return SearchResults(documents=documents, metadata=metadata, distances=distances)
 
         # Return mock search results if no matching content found
         mock_documents = [
             "This is a test document about course content and search functionality.",
-            "Another relevant document that matches the search query."
+            "Another relevant document that matches the search query.",
         ]
 
         mock_metadata = [
             {
-                'course_title': course_name or 'Test Course',
-                'lesson_number': lesson_number if lesson_number is not None else 1,
-                'lesson_link': 'https://example.com/test-course/lesson1'
+                "course_title": course_name or "Test Course",
+                "lesson_number": lesson_number if lesson_number is not None else 1,
+                "lesson_link": "https://example.com/test-course/lesson1",
             },
             {
-                'course_title': course_name or 'Test Course',
-                'lesson_number': lesson_number if lesson_number is not None else 2,
-                'lesson_link': 'https://example.com/test-course/lesson2'
-            }
+                "course_title": course_name or "Test Course",
+                "lesson_number": lesson_number if lesson_number is not None else 2,
+                "lesson_link": "https://example.com/test-course/lesson2",
+            },
         ]
 
-        return SearchResults(
-            documents=mock_documents,
-            metadata=mock_metadata,
-            distances=[0.1, 0.2]
-        )
+        return SearchResults(documents=mock_documents, metadata=mock_metadata, distances=[0.1, 0.2])
 
     def _resolve_course_name(self, course_name: str) -> Optional[str]:
         """Mock course name resolution"""
@@ -141,7 +138,9 @@ class VectorStore:
                 return title
         return None
 
-    def _build_filter(self, course_title: Optional[str], lesson_number: Optional[int]) -> Optional[Dict]:
+    def _build_filter(
+        self, course_title: Optional[str], lesson_number: Optional[int]
+    ) -> Optional[Dict]:
         """Mock filter building"""
         return {}
 
@@ -170,21 +169,21 @@ class VectorStore:
         """Mock getting all courses metadata"""
         return [
             {
-                'title': 'Test Course',
-                'course_link': 'https://example.com/test-course',
-                'instructor': 'Test Instructor',
-                'lessons': [
+                "title": "Test Course",
+                "course_link": "https://example.com/test-course",
+                "instructor": "Test Instructor",
+                "lessons": [
                     {
-                        'lesson_number': 1,
-                        'lesson_title': 'Introduction',
-                        'lesson_link': 'https://example.com/test-course/lesson1'
+                        "lesson_number": 1,
+                        "lesson_title": "Introduction",
+                        "lesson_link": "https://example.com/test-course/lesson1",
                     },
                     {
-                        'lesson_number': 2,
-                        'lesson_title': 'Advanced Topics',
-                        'lesson_link': 'https://example.com/test-course/lesson2'
-                    }
-                ]
+                        "lesson_number": 2,
+                        "lesson_title": "Advanced Topics",
+                        "lesson_link": "https://example.com/test-course/lesson2",
+                    },
+                ],
             }
         ]
 

@@ -4,12 +4,14 @@ Test script to verify the OpenRouter migration works correctly
 """
 import sys
 import os
-sys.path.append('backend')
+
+sys.path.append("backend")
 
 # Test imports
 print("=== Testing Imports ===")
 try:
     from config import config
+
     print("✅ Config loaded successfully")
     print(f"   Model: {config.OPENROUTER_MODEL}")
     print(f"   API Key present: {bool(config.OPENROUTER_API_KEY)}")
@@ -19,6 +21,7 @@ except Exception as e:
 
 try:
     from search_tools import CourseSearchTool, ToolManager
+
     print("✅ Search tools imported")
 except Exception as e:
     print(f"❌ Search tools import failed: {e}")
@@ -26,6 +29,7 @@ except Exception as e:
 
 try:
     from ai_generator import AIGenerator
+
     print("✅ AI Generator imported")
 except Exception as e:
     print(f"❌ AI Generator import failed: {e}")
@@ -33,6 +37,7 @@ except Exception as e:
 
 try:
     from rag_system import RAGSystem
+
     print("✅ RAG System imported")
 except Exception as e:
     print(f"❌ RAG System import failed: {e}")
@@ -87,35 +92,26 @@ try:
 
     # Test history parsing (private method access for testing)
     messages = []
-    lines = test_history.split('\n')
+    lines = test_history.split("\n")
     current_role = None
     current_content = []
 
     for line in lines:
         if line.startswith("User: "):
             if current_role and current_content:
-                messages.append({
-                    "role": "user",
-                    "content": "\n".join(current_content)
-                })
+                messages.append({"role": "user", "content": "\n".join(current_content)})
             current_role = "user"
             current_content = [line[6:]]
         elif line.startswith("Assistant: "):
             if current_role and current_content:
-                messages.append({
-                    "role": current_role,
-                    "content": "\n".join(current_content)
-                })
+                messages.append({"role": current_role, "content": "\n".join(current_content)})
             current_role = "assistant"
             current_content = [line[11:]]
         elif current_content:
             current_content.append(line)
 
     if current_role and current_content:
-        messages.append({
-            "role": current_role,
-            "content": "\n".join(current_content)
-        })
+        messages.append({"role": current_role, "content": "\n".join(current_content)})
 
     print(f"✅ History parsed correctly: {len(messages)} messages")
     for msg in messages:

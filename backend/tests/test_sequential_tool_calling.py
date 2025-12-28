@@ -14,11 +14,12 @@ import sys
 import os
 
 # Add backend directory to path
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
 # Mock the openai module
 from tests.mocks.mock_openai import *
-sys.modules['openai'] = sys.modules['__main__']
+
+sys.modules["openai"] = sys.modules["__main__"]
 
 from ai_generator import AIGenerator
 from search_tools import ToolManager, CourseSearchTool, CourseOutlineTool
@@ -26,7 +27,7 @@ from tests.mocks.mock_vector_store import MockVectorStore
 from tests.mocks.mock_ai_api_enhanced import (
     MockOpenAIClientEnhanced,
     create_sequential_strategy,
-    always_tool_call_strategy
+    always_tool_call_strategy,
 )
 
 
@@ -35,15 +36,18 @@ class TestSequentialToolCalling(unittest.TestCase):
 
     def setUp(self):
         """Set up test fixtures"""
-        self.config = type('Config', (), {
-            'OPENROUTER_API_KEY': 'test-key',
-            'OPENROUTER_MODEL': 'test-model',
-        })()
+        self.config = type(
+            "Config",
+            (),
+            {
+                "OPENROUTER_API_KEY": "test-key",
+                "OPENROUTER_MODEL": "test-model",
+            },
+        )()
 
         # Create AI generator
         self.ai_generator = AIGenerator(
-            api_key=self.config.OPENROUTER_API_KEY,
-            model=self.config.OPENROUTER_MODEL
+            api_key=self.config.OPENROUTER_API_KEY, model=self.config.OPENROUTER_MODEL
         )
 
         # Create mock vector store and tool manager
@@ -65,7 +69,7 @@ class TestSequentialToolCalling(unittest.TestCase):
         response = self.ai_generator.generate_response(
             query="Find course information",
             tools=self.tool_manager.get_tool_definitions(),
-            tool_manager=self.tool_manager
+            tool_manager=self.tool_manager,
         )
 
         # Verify response
@@ -81,18 +85,18 @@ class TestSequentialToolCalling(unittest.TestCase):
         round3 = mock_client.get_request(2)
 
         # Round 1 should have tools
-        self.assertIn('tools', round1)
-        self.assertTrue(len(round1['tools']) > 0)
+        self.assertIn("tools", round1)
+        self.assertTrue(len(round1["tools"]) > 0)
 
         # Round 2 should have tools (and contain tool results from round 1)
-        self.assertIn('tools', round2)
+        self.assertIn("tools", round2)
         # Should contain assistant tool_call and tool messages
-        messages2 = round2.get('messages', [])
-        has_tool_results = any(m.get('role') == 'tool' for m in messages2)
+        messages2 = round2.get("messages", [])
+        has_tool_results = any(m.get("role") == "tool" for m in messages2)
         self.assertTrue(has_tool_results, "Round 2 should include tool results from Round 1")
 
         # Round 3 should NOT have tools (synthesis)
-        self.assertNotIn('tools', round3)
+        self.assertNotIn("tools", round3)
 
     def test_single_round_backward_compatibility(self):
         """Test existing behavior: one tool call + one final response"""
@@ -102,20 +106,18 @@ class TestSequentialToolCalling(unittest.TestCase):
         def single_round_strategy(call_count, kwargs):
             if call_count == 1:
                 tool_call = {
-                    'id': 'call_1',
-                    'type': 'function',
-                    'function': {
-                        'name': 'get_course_outline',
-                        'arguments': json.dumps({'course_name': 'Test'})
-                    }
+                    "id": "call_1",
+                    "type": "function",
+                    "function": {
+                        "name": "get_course_outline",
+                        "arguments": json.dumps({"course_name": "Test"}),
+                    },
                 }
                 return MockChatCompletion(
-                    choices=[MockChoice('tool_calls', MockMessage(None, [tool_call]))]
+                    choices=[MockChoice("tool_calls", MockMessage(None, [tool_call]))]
                 )
             else:
-                return MockChatCompletion(
-                    choices=[MockChoice('stop', MockMessage("Final answer"))]
-                )
+                return MockChatCompletion(choices=[MockChoice("stop", MockMessage("Final answer"))])
 
         mock_client.set_response_strategy(single_round_strategy)
         self.ai_generator.client = mock_client
@@ -123,7 +125,7 @@ class TestSequentialToolCalling(unittest.TestCase):
         response = self.ai_generator.generate_response(
             query="Test query",
             tools=self.tool_manager.get_tool_definitions(),
-            tool_manager=self.tool_manager
+            tool_manager=self.tool_manager,
         )
 
         self.assertEqual(response, "Final answer")
@@ -135,7 +137,7 @@ class TestSequentialToolCalling(unittest.TestCase):
 
         def direct_response_strategy(call_count, kwargs):
             return MockChatCompletion(
-                choices=[MockChoice('stop', MockMessage("Direct answer without tools"))]
+                choices=[MockChoice("stop", MockMessage("Direct answer without tools"))]
             )
 
         mock_client.set_response_strategy(direct_response_strategy)
@@ -144,7 +146,7 @@ class TestSequentialToolCalling(unittest.TestCase):
         response = self.ai_generator.generate_response(
             query="General knowledge question",
             tools=self.tool_manager.get_tool_definitions(),
-            tool_manager=self.tool_manager
+            tool_manager=self.tool_manager,
         )
 
         self.assertEqual(response, "Direct answer without tools")
@@ -159,7 +161,7 @@ class TestSequentialToolCalling(unittest.TestCase):
         response = self.ai_generator.generate_response(
             query="Keep asking for tools",
             tools=self.tool_manager.get_tool_definitions(),
-            tool_manager=self.tool_manager
+            tool_manager=self.tool_manager,
         )
 
         # Should make 3 calls: 2 tool rounds + 1 synthesis
@@ -176,19 +178,19 @@ class TestSequentialToolCalling(unittest.TestCase):
         def error_round_strategy(call_count, kwargs):
             if call_count == 1:
                 tool_call = {
-                    'id': 'call_error',
-                    'type': 'function',
-                    'function': {
-                        'name': 'search_course_content',
-                        'arguments': json.dumps({'query': 'test'})
-                    }
+                    "id": "call_error",
+                    "type": "function",
+                    "function": {
+                        "name": "search_course_content",
+                        "arguments": json.dumps({"query": "test"}),
+                    },
                 }
                 return MockChatCompletion(
-                    choices=[MockChoice('tool_calls', MockMessage(None, [tool_call]))]
+                    choices=[MockChoice("tool_calls", MockMessage(None, [tool_call]))]
                 )
             else:
                 return MockChatCompletion(
-                    choices=[MockChoice('stop', MockMessage("Got error but continued"))]
+                    choices=[MockChoice("stop", MockMessage("Got error but continued"))]
                 )
 
         mock_client.set_response_strategy(error_round_strategy)
@@ -206,7 +208,7 @@ class TestSequentialToolCalling(unittest.TestCase):
             response = self.ai_generator.generate_response(
                 query="Test",
                 tools=self.tool_manager.get_tool_definitions(),
-                tool_manager=self.tool_manager
+                tool_manager=self.tool_manager,
             )
 
             # Should return error message in tool result, then synthesize
@@ -229,21 +231,21 @@ class TestSequentialToolCalling(unittest.TestCase):
             query="New question",
             conversation_history=history,
             tools=self.tool_manager.get_tool_definitions(),
-            tool_manager=self.tool_manager
+            tool_manager=self.tool_manager,
         )
 
         # Verify history was included in all API calls
         for i in range(mock_client.get_call_count()):
             request = mock_client.get_request(i)
-            messages = request.get('messages', [])
+            messages = request.get("messages", [])
 
             # Find user messages
-            user_messages = [m for m in messages if m.get('role') == 'user']
+            user_messages = [m for m in messages if m.get("role") == "user"]
 
             # First user message should be the history or current query
             found_history = False
             for msg in user_messages:
-                if "Previous question" in msg.get('content', ''):
+                if "Previous question" in msg.get("content", ""):
                     found_history = True
                     break
 
@@ -259,22 +261,21 @@ class TestSequentialToolCalling(unittest.TestCase):
         self.ai_generator.generate_response(
             query="Test",
             tools=self.tool_manager.get_tool_definitions(),
-            tool_manager=self.tool_manager
+            tool_manager=self.tool_manager,
         )
 
         # Check round 2 has assistant tool_calls from round 1
         round2_request = mock_client.get_request(1)
-        messages2 = round2_request.get('messages', [])
+        messages2 = round2_request.get("messages", [])
 
         # Should have assistant tool_calls
         has_assistant_tool_calls = any(
-            m.get('role') == 'assistant' and m.get('tool_calls')
-            for m in messages2
+            m.get("role") == "assistant" and m.get("tool_calls") for m in messages2
         )
         self.assertTrue(has_assistant_tool_calls)
 
         # Should have tool results
-        has_tool_results = any(m.get('role') == 'tool' for m in messages2)
+        has_tool_results = any(m.get("role") == "tool" for m in messages2)
         self.assertTrue(has_tool_results)
 
     def test_empty_tool_results_handling(self):
@@ -284,20 +285,20 @@ class TestSequentialToolCalling(unittest.TestCase):
         def empty_results_strategy(call_count, kwargs):
             if call_count == 1:
                 tool_call = {
-                    'id': 'call_empty',
-                    'type': 'function',
-                    'function': {
-                        'name': 'search_course_content',
-                        'arguments': json.dumps({'query': 'nonexistent'})
-                    }
+                    "id": "call_empty",
+                    "type": "function",
+                    "function": {
+                        "name": "search_course_content",
+                        "arguments": json.dumps({"query": "nonexistent"}),
+                    },
                 }
                 return MockChatCompletion(
-                    choices=[MockChoice('tool_calls', MockMessage(None, [tool_call]))]
+                    choices=[MockChoice("tool_calls", MockMessage(None, [tool_call]))]
                 )
             else:
                 # Tool would return empty, but we proceed anyway
                 return MockChatCompletion(
-                    choices=[MockChoice('stop', MockMessage("No results found, continuing anyway"))]
+                    choices=[MockChoice("stop", MockMessage("No results found, continuing anyway"))]
                 )
 
         mock_client.set_response_strategy(empty_results_strategy)
@@ -311,7 +312,7 @@ class TestSequentialToolCalling(unittest.TestCase):
             response = self.ai_generator.generate_response(
                 query="Test",
                 tools=self.tool_manager.get_tool_definitions(),
-                tool_manager=self.tool_manager
+                tool_manager=self.tool_manager,
             )
 
             # Should still proceed to synthesis
@@ -331,7 +332,7 @@ class TestSequentialToolCalling(unittest.TestCase):
         response = self.ai_generator.generate_response(
             query="Test query",
             tools=self.tool_manager.get_tool_definitions(),
-            tool_manager=self.tool_manager
+            tool_manager=self.tool_manager,
         )
 
         # Response should be a simple string (not a complex object)
@@ -366,43 +367,39 @@ class TestSequentialToolCalling(unittest.TestCase):
 
         # Round 0 (first tool round)
         params = self.ai_generator._build_api_params(messages, tools, 0)
-        self.assertIn('tools', params)
-        self.assertEqual(len(params['tools']), 1)
-        self.assertIn('tool_choice', params)
-        self.assertEqual(params['tool_choice'], 'auto')
+        self.assertIn("tools", params)
+        self.assertEqual(len(params["tools"]), 1)
+        self.assertIn("tool_choice", params)
+        self.assertEqual(params["tool_choice"], "auto")
 
         # Round 1 (second tool round)
         params = self.ai_generator._build_api_params(messages, tools, 1)
-        self.assertIn('tools', params)
+        self.assertIn("tools", params)
 
         # Round 2 (synthesis - no tools)
         params = self.ai_generator._build_api_params(messages, tools, 2)
-        self.assertNotIn('tools', params)
+        self.assertNotIn("tools", params)
 
     def test_execute_tool_calls(self):
         """Test tool execution helper method"""
+
         # Create mock tool call objects
         class MockToolCallObj:
             def __init__(self, call_id, function_name, args_dict):
                 self.id = call_id
-                self.function = type('Func', (), {
-                    'name': function_name,
-                    'arguments': json.dumps(args_dict)
-                })()
+                self.function = type(
+                    "Func", (), {"name": function_name, "arguments": json.dumps(args_dict)}
+                )()
 
-        tool_calls = [
-            MockToolCallObj('call1', 'search_course_content', {'query': 'test'})
-        ]
+        tool_calls = [MockToolCallObj("call1", "search_course_content", {"query": "test"})]
 
-        results, sources = self.ai_generator._execute_tool_calls(
-            tool_calls, self.tool_manager
-        )
+        results, sources = self.ai_generator._execute_tool_calls(tool_calls, self.tool_manager)
 
         self.assertIsInstance(results, list)
         self.assertEqual(len(results), 1)
-        self.assertEqual(results[0]['role'], 'tool')
-        self.assertEqual(results[0]['tool_call_id'], 'call1')
-        self.assertIn('content', results[0])
+        self.assertEqual(results[0]["role"], "tool")
+        self.assertEqual(results[0]["tool_call_id"], "call1")
+        self.assertIn("content", results[0])
 
     def test_make_synthesis_call(self):
         """Test final synthesis call"""
@@ -410,7 +407,7 @@ class TestSequentialToolCalling(unittest.TestCase):
 
         def synthesis_strategy(call_count, kwargs):
             return MockChatCompletion(
-                choices=[MockChoice('stop', MockMessage("Synthesis complete"))]
+                choices=[MockChoice("stop", MockMessage("Synthesis complete"))]
             )
 
         mock_client.set_response_strategy(synthesis_strategy)
@@ -436,7 +433,7 @@ class TestMessageChainValidation(unittest.TestCase):
         mock_client.set_response_strategy(create_sequential_strategy(tool_rounds=2))
 
         # Simulate the full flow
-        generator = AIGenerator('test-key', 'test-model')
+        generator = AIGenerator("test-key", "test-model")
         generator.client = mock_client
 
         tool_manager = ToolManager()
@@ -444,9 +441,7 @@ class TestMessageChainValidation(unittest.TestCase):
         tool_manager.register_tool(CourseOutlineTool(MockVectorStore()))
 
         generator.generate_response(
-            query="Test",
-            tools=tool_manager.get_tool_definitions(),
-            tool_manager=tool_manager
+            query="Test", tools=tool_manager.get_tool_definitions(), tool_manager=tool_manager
         )
 
         # Verify message chain
@@ -454,5 +449,5 @@ class TestMessageChainValidation(unittest.TestCase):
         self.assertTrue(is_valid, f"Message chain invalid: {error}")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

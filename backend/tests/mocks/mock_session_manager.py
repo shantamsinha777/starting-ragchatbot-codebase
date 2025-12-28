@@ -1,5 +1,6 @@
 from typing import Dict, List, Optional
 
+
 class MockSessionManager:
     """Mock implementation of SessionManager for testing"""
 
@@ -33,7 +34,7 @@ class MockSessionManager:
 
         # Enforce max history limit
         if len(self.sessions[session_id]) > self.max_history * 2:
-            self.sessions[session_id] = self.sessions[session_id][-self.max_history * 2:]
+            self.sessions[session_id] = self.sessions[session_id][-self.max_history * 2 :]
 
     def clear_session(self, session_id: str):
         """Mock clearing session"""

@@ -3,27 +3,28 @@ import os
 import sys
 
 # Add the backend directory to the path so we can import the modules
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 
 # Mock the openai module to avoid real API calls when not needed
 with open("tests/mocks/mock_openai.py", "r") as f:
     mock_code = f.read()
 
 # Create a new module and execute the code in its namespace
-openai = type(sys)('openai')
-sys.modules['openai'] = openai
+openai = type(sys)("openai")
+sys.modules["openai"] = openai
 exec(mock_code, openai.__dict__)
 
 # Mock the vector_store module to avoid chromadb and sentence-transformers dependencies
 with open("tests/mocks/mock_vector_store_module.py", "r") as f:
     vector_store_code = f.read()
 
-vector_store = type(sys)('vector_store')
-sys.modules['vector_store'] = vector_store
+vector_store = type(sys)("vector_store")
+sys.modules["vector_store"] = vector_store
 exec(vector_store_code, vector_store.__dict__)
 
 from ai_generator import AIGenerator
 from rag_system import RAGSystem
+
 
 class TestRealAPIIntegration(unittest.TestCase):
     """Integration tests using actual OpenRouter API calls"""
@@ -31,7 +32,7 @@ class TestRealAPIIntegration(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """Setup with test API key from environment"""
-        cls.api_key = os.getenv('TEST_OPENROUTER_API_KEY')
+        cls.api_key = os.getenv("TEST_OPENROUTER_API_KEY")
         if not cls.api_key:
             raise unittest.SkipTest("No test API key available - set TEST_OPENROUTER_API_KEY")
 
@@ -48,7 +49,7 @@ class TestRealAPIIntegration(unittest.TestCase):
         from vector_store import VectorStore
 
         # Create real components
-        vector_store = VectorStore('./test_chroma', 'all-MiniLM-L6-v2')
+        vector_store = VectorStore("./test_chroma", "all-MiniLM-L6-v2")
         search_tool = CourseSearchTool(vector_store)
         tool_manager = ToolManager()
         tool_manager.register_tool(search_tool)
@@ -59,7 +60,7 @@ class TestRealAPIIntegration(unittest.TestCase):
         response = ai_gen.generate_response(
             query="search for information about course materials",
             tools=tool_manager.get_tool_definitions(),
-            tool_manager=tool_manager
+            tool_manager=tool_manager,
         )
 
         self.assertIsInstance(response, str)
@@ -74,12 +75,13 @@ class TestRealAPIIntegration(unittest.TestCase):
 
     def test_real_rag_system_integration(self):
         """Test complete RAG system with real API"""
+
         # Create test config
         class TestConfig:
             OPENROUTER_API_KEY = self.api_key
-            OPENROUTER_MODEL = 'meta-llama/llama-3.2-3b-instruct'
-            CHROMA_PATH = './test_chroma'
-            EMBEDDING_MODEL = 'all-MiniLM-L6-v2'
+            OPENROUTER_MODEL = "meta-llama/llama-3.2-3b-instruct"
+            CHROMA_PATH = "./test_chroma"
+            EMBEDDING_MODEL = "all-MiniLM-L6-v2"
             CHUNK_SIZE = 800
             CHUNK_OVERLAP = 100
             MAX_RESULTS = 5
@@ -96,12 +98,13 @@ class TestRealAPIIntegration(unittest.TestCase):
 
     def test_real_api_with_session_management(self):
         """Test real API with session management"""
+
         # Create test config
         class TestConfig:
             OPENROUTER_API_KEY = self.api_key
-            OPENROUTER_MODEL = 'meta-llama/llama-3.2-3b-instruct'
-            CHROMA_PATH = './test_chroma'
-            EMBEDDING_MODEL = 'all-MiniLM-L6-v2'
+            OPENROUTER_MODEL = "meta-llama/llama-3.2-3b-instruct"
+            CHROMA_PATH = "./test_chroma"
+            EMBEDDING_MODEL = "all-MiniLM-L6-v2"
             CHUNK_SIZE = 800
             CHUNK_OVERLAP = 100
             MAX_RESULTS = 5
@@ -127,5 +130,6 @@ class TestRealAPIIntegration(unittest.TestCase):
         self.assertIn("What is Python?", history)
         self.assertIn("Tell me more about it", history)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

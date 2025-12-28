@@ -3,7 +3,7 @@ import sys
 import os
 
 # Add the backend directory to the path so we can import the modules
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
 # Mock the openai module before importing ai_generator
 # Read the mock file content and execute it
@@ -11,8 +11,8 @@ with open("tests/mocks/mock_openai.py", "r") as f:
     mock_code = f.read()
 
 # Create a new module and execute the code in its namespace
-openai = type(sys)('openai')
-sys.modules['openai'] = openai
+openai = type(sys)("openai")
+sys.modules["openai"] = openai
 exec(mock_code, openai.__dict__)
 
 from ai_generator import AIGenerator
@@ -20,30 +20,34 @@ from search_tools import ToolManager, CourseSearchTool
 from tests.mocks.mock_vector_store import MockVectorStore
 from tests.mocks.mock_session_manager import MockSessionManager
 
+
 class TestAIGenerator(unittest.TestCase):
     """Comprehensive tests for AI generator tool calling"""
 
     def setUp(self):
         """Set up test fixtures"""
         # Create mock configuration
-        self.config = type('Config', (), {
-            'OPENROUTER_API_KEY': 'test-key',
-            'OPENROUTER_MODEL': 'test-model',
-            'CHROMA_PATH': './test_chroma',
-            'EMBEDDING_MODEL': 'test-embedding',
-            'CHUNK_SIZE': 800,
-            'CHUNK_OVERLAP': 100,
-            'MAX_RESULTS': 5,
-            'MAX_HISTORY': 2
-        })()
+        self.config = type(
+            "Config",
+            (),
+            {
+                "OPENROUTER_API_KEY": "test-key",
+                "OPENROUTER_MODEL": "test-model",
+                "CHROMA_PATH": "./test_chroma",
+                "EMBEDDING_MODEL": "test-embedding",
+                "CHUNK_SIZE": 800,
+                "CHUNK_OVERLAP": 100,
+                "MAX_RESULTS": 5,
+                "MAX_HISTORY": 2,
+            },
+        )()
 
         # Create mock vector store
         self.mock_vector_store = MockVectorStore()
 
         # Create AI generator with mock OpenAI client
         self.ai_generator = AIGenerator(
-            api_key=self.config.OPENROUTER_API_KEY,
-            model=self.config.OPENROUTER_MODEL
+            api_key=self.config.OPENROUTER_API_KEY, model=self.config.OPENROUTER_MODEL
         )
 
         # Create tool manager and search tool
@@ -66,14 +70,16 @@ class TestAIGenerator(unittest.TestCase):
         openai_tools = []
         for tool in tool_defs:
             if "input_schema" in tool:
-                openai_tools.append({
-                    "type": "function",
-                    "function": {
-                        "name": tool["name"],
-                        "description": tool["description"],
-                        "parameters": tool["input_schema"]
+                openai_tools.append(
+                    {
+                        "type": "function",
+                        "function": {
+                            "name": tool["name"],
+                            "description": tool["description"],
+                            "parameters": tool["input_schema"],
+                        },
                     }
-                })
+                )
 
         # Should convert successfully
         self.assertTrue(len(openai_tools) > 0)
@@ -87,6 +93,7 @@ class TestAIGenerator(unittest.TestCase):
 
         # Mock the OpenAI client to return a tool call response
         import tests.mocks.mock_ai_api as mock_ai
+
         self.ai_generator.client = mock_ai.MockOpenAIClient()
 
         # Generate response (should trigger tool execution)
@@ -94,7 +101,7 @@ class TestAIGenerator(unittest.TestCase):
             response = self.ai_generator.generate_response(
                 query=query,
                 tools=self.tool_manager.get_tool_definitions(),
-                tool_manager=self.tool_manager
+                tool_manager=self.tool_manager,
             )
 
             # Should return a response (either tool results or final answer)
@@ -113,10 +120,7 @@ class TestAIGenerator(unittest.TestCase):
         # 3. AI synthesizes results
 
         # For now, test that the tool manager can execute tools
-        result = self.tool_manager.execute_tool(
-            "search_course_content",
-            query="test query"
-        )
+        result = self.tool_manager.execute_tool("search_course_content", query="test query")
 
         # Should execute successfully
         self.assertIsInstance(result, str)
@@ -165,7 +169,7 @@ class TestAIGenerator(unittest.TestCase):
         history_str = "User: First question\nAssistant: First answer\nUser: Second question\nAssistant: Second answer"
 
         # Parse it like the AI generator does
-        lines = history_str.split('\n')
+        lines = history_str.split("\n")
         messages = []
         current_role = None
         current_content = []
@@ -173,18 +177,12 @@ class TestAIGenerator(unittest.TestCase):
         for line in lines:
             if line.startswith("User: "):
                 if current_role and current_content:
-                    messages.append({
-                        "role": current_role,
-                        "content": "\n".join(current_content)
-                    })
+                    messages.append({"role": current_role, "content": "\n".join(current_content)})
                 current_role = "user"
                 current_content = [line[6:]]  # Remove "User: "
             elif line.startswith("Assistant: "):
                 if current_role and current_content:
-                    messages.append({
-                        "role": current_role,
-                        "content": "\n".join(current_content)
-                    })
+                    messages.append({"role": current_role, "content": "\n".join(current_content)})
                 current_role = "assistant"
                 current_content = [line[11:]]  # Remove "Assistant: "
             elif current_content:
@@ -192,10 +190,7 @@ class TestAIGenerator(unittest.TestCase):
 
         # Add final message
         if current_role and current_content:
-            messages.append({
-                "role": current_role,
-                "content": "\n".join(current_content)
-            })
+            messages.append({"role": current_role, "content": "\n".join(current_content)})
 
         # Should convert successfully
         self.assertTrue(len(messages) > 0)
@@ -211,11 +206,7 @@ class TestAIGenerator(unittest.TestCase):
     def test_api_parameter_preparation(self):
         """Test preparation of API parameters"""
         # Test base parameter setup
-        base_params = {
-            "model": "test-model",
-            "temperature": 0,
-            "max_tokens": 800
-        }
+        base_params = {"model": "test-model", "temperature": 0, "max_tokens": 800}
 
         # Should have required parameters
         self.assertIn("model", base_params)
@@ -264,7 +255,8 @@ class TestAIGenerator(unittest.TestCase):
         except Exception:
             self.assertTrue(True)
 
+
 # Use the improved mock_openai.py that's already created
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

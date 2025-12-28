@@ -1,4 +1,3 @@
-
 """Mock OpenAI module for testing AI Generator without actual API calls."""
 
 print("🚀 OpenAI mock module loaded!")
@@ -34,10 +33,10 @@ class Completions:
 
         # Return a mock response that matches OpenAI API format
         # Check if tools are requested and if we should simulate tool calls
-        use_tools = kwargs.get('tools') is not None
-        messages = kwargs.get('messages', [])
-        has_search = 'search' in str(messages).lower()
-        has_outline = 'outline' in str(messages).lower()
+        use_tools = kwargs.get("tools") is not None
+        messages = kwargs.get("messages", [])
+        has_search = "search" in str(messages).lower()
+        has_outline = "outline" in str(messages).lower()
 
         # Tool call trigger: if tools present and specific keywords in messages
         if use_tools and (has_search or has_outline):
@@ -51,48 +50,47 @@ class Completions:
 
     def _create_normal_response(self):
         """Create a normal (non-tool) response."""
-        return type('Response', (), {
-            'choices': [
-                type('Choice', (), {
-                    'finish_reason': 'stop',
-                    'message': type('Message', (), {
-                        'content': 'Mock AI response',
-                        'tool_calls': []
-                    })()
-                })()
-            ]
-        })()
+        return type(
+            "Response",
+            (),
+            {
+                "choices": [
+                    type(
+                        "Choice",
+                        (),
+                        {
+                            "finish_reason": "stop",
+                            "message": type(
+                                "Message", (), {"content": "Mock AI response", "tool_calls": []}
+                            )(),
+                        },
+                    )()
+                ]
+            },
+        )()
 
     def _create_search_tool_call_response(self):
         """Create a search_course_content tool call response."""
-        return self._create_tool_call_response('search_course_content', '{"query": "test query"}')
+        return self._create_tool_call_response("search_course_content", '{"query": "test query"}')
 
     def _create_outline_tool_call_response(self):
         """Create a get_course_outline tool call response."""
-        return self._create_tool_call_response('get_course_outline', '{"course_name": "Test Course"}')
+        return self._create_tool_call_response(
+            "get_course_outline", '{"course_name": "Test Course"}'
+        )
 
     def _create_tool_call_response(self, function_name, arguments):
         """Create a generic tool call response."""
         # Create tool call object with proper structure
         tool_call = MockToolCall(
-            call_id=f'call_{self.call_count}',
-            function_name=function_name,
-            function_args=arguments
+            call_id=f"call_{self.call_count}", function_name=function_name, function_args=arguments
         )
 
-        message = type('Message', (), {
-            'content': None,
-            'tool_calls': [tool_call]
-        })()
+        message = type("Message", (), {"content": None, "tool_calls": [tool_call]})()
 
-        choice = type('Choice', (), {
-            'finish_reason': 'tool_calls',
-            'message': message
-        })()
+        choice = type("Choice", (), {"finish_reason": "tool_calls", "message": message})()
 
-        return type('Response', (), {
-            'choices': [choice]
-        })()
+        return type("Response", (), {"choices": [choice]})()
 
 
 class MockToolCall:
@@ -100,18 +98,15 @@ class MockToolCall:
 
     def __init__(self, call_id, function_name, function_args):
         self.id = call_id
-        self.type = 'function'
+        self.type = "function"
         self.function = MockFunction(function_name, function_args)
 
     def to_dict(self):
         """Convert to dictionary format."""
         return {
-            'id': self.id,
-            'type': self.type,
-            'function': {
-                'name': self.function.name,
-                'arguments': self.function.arguments
-            }
+            "id": self.id,
+            "type": self.type,
+            "function": {"name": self.function.name, "arguments": self.function.arguments},
         }
 
 

@@ -10,28 +10,28 @@ import os
 from datetime import datetime
 
 # Add the backend directory to the path
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
 # Mock dependencies before importing test modules
 # Mock the openai module
 with open("tests/mocks/mock_openai.py", "r") as f:
     mock_code = f.read()
-openai = type(sys)('openai')
-sys.modules['openai'] = openai
+openai = type(sys)("openai")
+sys.modules["openai"] = openai
 exec(mock_code, openai.__dict__)
 
 # Mock the vector_store module
 with open("tests/mocks/mock_vector_store_module.py", "r") as f:
     vector_store_code = f.read()
-vector_store = type(sys)('vector_store')
-sys.modules['vector_store'] = vector_store
+vector_store = type(sys)("vector_store")
+sys.modules["vector_store"] = vector_store
 exec(vector_store_code, vector_store.__dict__)
 
 # Mock the document_processor module
 with open("tests/mocks/mock_document_processor.py", "r") as f:
     mock_doc_code = f.read()
-document_processor = type(sys)('document_processor')
-sys.modules['document_processor'] = document_processor
+document_processor = type(sys)("document_processor")
+sys.modules["document_processor"] = document_processor
 exec(mock_doc_code, document_processor.__dict__)
 
 # Now import all test modules
@@ -44,6 +44,7 @@ from tests.integration.test_document_processing import TestDocumentProcessing
 from tests.integration.test_real_api_integration import TestRealAPIIntegration
 from tests.integration.test_chroma_integration import TestChromaIntegration
 from tests.integration.test_end_to_end import TestEndToEnd
+
 
 def run_all_tests():
     """Run all tests and return results"""
@@ -70,11 +71,12 @@ def run_all_tests():
 
     return results
 
+
 def generate_test_report(results):
     """Generate a detailed test report"""
-    print("\n" + "="*80)
+    print("\n" + "=" * 80)
     print("RAG SYSTEM TEST REPORT")
-    print("="*80)
+    print("=" * 80)
     print(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print()
 
@@ -84,7 +86,9 @@ def generate_test_report(results):
     print(f"  Failures: {len(results.failures)}")
     print(f"  Errors: {len(results.errors)}")
     print(f"  Skipped: {len(results.skipped)}")
-    print(f"  Success Rate: {((results.testsRun - len(results.failures) - len(results.errors)) / results.testsRun * 100):.1f}%")
+    print(
+        f"  Success Rate: {((results.testsRun - len(results.failures) - len(results.errors)) / results.testsRun * 100):.1f}%"
+    )
     print()
 
     # Detailed results
@@ -123,7 +127,8 @@ def generate_test_report(results):
         print("  • Re-run tests after making fixes")
         print("  • Check system logs for detailed error information")
 
-    print("="*80)
+    print("=" * 80)
+
 
 def main():
     """Main function to run all tests"""
@@ -143,5 +148,6 @@ def main():
     else:
         sys.exit(0)  # Zero exit code for success
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

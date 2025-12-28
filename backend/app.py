@@ -1,4 +1,5 @@
 import warnings
+
 warnings.filterwarnings("ignore", message="resource_tracker: There appear to be.*")
 
 from fastapi import FastAPI, HTTPException
@@ -16,10 +17,7 @@ from rag_system import RAGSystem
 app = FastAPI(title="Course Materials RAG System", root_path="")
 
 # Add trusted host middleware for proxy
-app.add_middleware(
-    TrustedHostMiddleware,
-    allowed_hosts=["*"]
-)
+app.add_middleware(TrustedHostMiddleware, allowed_hosts=["*"])
 
 # Enable CORS with proper settings for proxy
 app.add_middleware(
@@ -34,24 +32,32 @@ app.add_middleware(
 # Initialize RAG system
 rag_system = RAGSystem(config)
 
+
 # Pydantic models for request/response
 class QueryRequest(BaseModel):
     """Request model for course queries"""
+
     query: str
     session_id: Optional[str] = None
 
+
 class QueryResponse(BaseModel):
     """Response model for course queries"""
+
     answer: str
     sources: List[str]
     session_id: str
 
+
 class CourseStats(BaseModel):
     """Response model for course statistics"""
+
     total_courses: int
     course_titles: List[str]
 
+
 # API Endpoints
+
 
 @app.post("/api/query", response_model=QueryResponse)
 async def query_documents(request: QueryRequest):
@@ -70,16 +76,14 @@ async def query_documents(request: QueryRequest):
 
         print(f"[DEBUG] Response generated: {answer[:100]}...")
 
-        return QueryResponse(
-            answer=answer,
-            sources=sources,
-            session_id=session_id
-        )
+        return QueryResponse(answer=answer, sources=sources, session_id=session_id)
     except Exception as e:
         print(f"[ERROR] Query failed with: {type(e).__name__}: {e}")
         import traceback
+
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"{type(e).__name__}: {e}")
+
 
 @app.get("/api/courses", response_model=CourseStats)
 async def get_course_stats():
@@ -87,11 +91,11 @@ async def get_course_stats():
     try:
         analytics = rag_system.get_course_analytics()
         return CourseStats(
-            total_courses=analytics["total_courses"],
-            course_titles=analytics["course_titles"]
+            total_courses=analytics["total_courses"], course_titles=analytics["course_titles"]
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.on_event("startup")
 async def startup_event():
@@ -104,6 +108,7 @@ async def startup_event():
             print(f"Loaded {courses} courses with {chunks} chunks")
         except Exception as e:
             print(f"Error loading documents: {e}")
+
 
 # Custom static file handler with no-cache headers for development
 from fastapi.staticfiles import StaticFiles
@@ -121,7 +126,7 @@ class DevStaticFiles(StaticFiles):
             response.headers["Pragma"] = "no-cache"
             response.headers["Expires"] = "0"
         return response
-    
-    
+
+
 # Serve static files for the frontend
 app.mount("/", StaticFiles(directory="../frontend", html=True), name="static")

@@ -5,26 +5,27 @@ import os
 import sys
 
 # Add the backend directory to the path so we can import the modules
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 
 # Mock the openai module to avoid real API calls when not needed
 with open("tests/mocks/mock_openai.py", "r") as f:
     mock_code = f.read()
 
 # Create a new module and execute the code in its namespace
-openai = type(sys)('openai')
-sys.modules['openai'] = openai
+openai = type(sys)("openai")
+sys.modules["openai"] = openai
 exec(mock_code, openai.__dict__)
 
 # Mock the vector_store module to avoid chromadb and sentence-transformers dependencies
 with open("tests/mocks/mock_vector_store_module.py", "r") as f:
     vector_store_code = f.read()
 
-vector_store = type(sys)('vector_store')
-sys.modules['vector_store'] = vector_store
+vector_store = type(sys)("vector_store")
+sys.modules["vector_store"] = vector_store
 exec(vector_store_code, vector_store.__dict__)
 
 from rag_system import RAGSystem
+
 
 class TestEndToEnd(unittest.TestCase):
     """End-to-end integration tests for complete RAG workflow"""
@@ -35,10 +36,10 @@ class TestEndToEnd(unittest.TestCase):
 
         # Create test config
         class TestConfig:
-            OPENROUTER_API_KEY = os.getenv('TEST_OPENROUTER_API_KEY', 'test-key')
-            OPENROUTER_MODEL = 'meta-llama/llama-3.2-3b-instruct'
+            OPENROUTER_API_KEY = os.getenv("TEST_OPENROUTER_API_KEY", "test-key")
+            OPENROUTER_MODEL = "meta-llama/llama-3.2-3b-instruct"
             CHROMA_PATH = self.temp_dir
-            EMBEDDING_MODEL = 'all-MiniLM-L6-v2'
+            EMBEDDING_MODEL = "all-MiniLM-L6-v2"
             CHUNK_SIZE = 800
             CHUNK_OVERLAP = 100
             MAX_RESULTS = 5
@@ -56,8 +57,9 @@ class TestEndToEnd(unittest.TestCase):
         """Test complete workflow from document to query response"""
         # Create test document
         doc_path = os.path.join(self.temp_dir, "test_course.txt")
-        with open(doc_path, 'w') as f:
-            f.write("""Course Title: E2E Test Course
+        with open(doc_path, "w") as f:
+            f.write(
+                """Course Title: E2E Test Course
 Course Link: https://example.com/e2e
 Course Instructor: Test Instructor
 
@@ -66,7 +68,8 @@ This is the introduction to our test course.
 
 Lesson 2: Advanced Concepts
 Here we cover advanced topics in detail.
-""")
+"""
+            )
 
         # Add document to system
         course, chunks = self.rag_system.add_course_document(doc_path)
@@ -117,8 +120,9 @@ Here we cover advanced topics in detail.
         # Create multiple test documents
         for i in range(3):
             doc_path = os.path.join(self.temp_dir, f"test_course_{i}.txt")
-            with open(doc_path, 'w') as f:
-                f.write(f"""Course Title: E2E Test Course {i}
+            with open(doc_path, "w") as f:
+                f.write(
+                    f"""Course Title: E2E Test Course {i}
 Course Link: https://example.com/e2e{i}
 Course Instructor: Test Instructor {i}
 
@@ -127,7 +131,8 @@ This is the introduction to test course {i}.
 
 Lesson 2: Advanced
 Advanced content for course {i}.
-""")
+"""
+                )
 
             # Add document to system
             course, chunks = self.rag_system.add_course_document(doc_path)
@@ -147,14 +152,16 @@ Advanced content for course {i}.
 
         # Add documents and query for both sessions
         doc_path = os.path.join(self.temp_dir, "session_test_course.txt")
-        with open(doc_path, 'w') as f:
-            f.write("""Course Title: Session Test Course
+        with open(doc_path, "w") as f:
+            f.write(
+                """Course Title: Session Test Course
 Course Link: https://example.com/session
 Course Instructor: Test Instructor
 
 Lesson 1: Session Isolation
 This lesson tests session isolation.
-""")
+"""
+            )
 
         course, chunks = self.rag_system.add_course_document(doc_path)
 
@@ -181,14 +188,16 @@ This lesson tests session isolation.
         """Test complete workflow with special character queries"""
         # Add test document
         doc_path = os.path.join(self.temp_dir, "special_query_course.txt")
-        with open(doc_path, 'w') as f:
-            f.write("""Course Title: Special Query Course
+        with open(doc_path, "w") as f:
+            f.write(
+                """Course Title: Special Query Course
 Course Link: https://example.com/special
 Course Instructor: Test Instructor
 
 Lesson 1: Special Characters
 This lesson covers special characters and Unicode.
-""")
+"""
+            )
 
         course, chunks = self.rag_system.add_course_document(doc_path)
 
@@ -196,7 +205,7 @@ This lesson covers special characters and Unicode.
         special_queries = [
             "What about Unicode? 你好世界 🌍",
             "Tell me about special chars: !@#$%^&*()",
-            "Query with math: ∑∫∆∇∂∀∃∞≈≠≤≥"
+            "Query with math: ∑∫∆∇∂∀∃∞≈≠≤≥",
         ]
 
         for query in special_queries:
@@ -212,14 +221,16 @@ This lesson covers special characters and Unicode.
         start_time = time.time()
         for i in range(5):
             doc_path = os.path.join(self.temp_dir, f"perf_course_{i}.txt")
-            with open(doc_path, 'w') as f:
-                f.write(f"""Course Title: Performance Course {i}
+            with open(doc_path, "w") as f:
+                f.write(
+                    f"""Course Title: Performance Course {i}
 Course Link: https://example.com/perf{i}
 Course Instructor: Test Instructor
 
 Lesson 1: Performance
 Performance test content for course {i}.
-""")
+"""
+                )
 
             course, chunks = self.rag_system.add_course_document(doc_path)
 
@@ -237,5 +248,6 @@ Performance test content for course {i}.
         self.assertLess(doc_creation_time, 10.0)  # Should be fast with mocks
         self.assertLess(query_time, 5.0)  # Should be fast with mocks
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

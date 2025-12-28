@@ -3,11 +3,12 @@ import sys
 import os
 
 # Add the backend directory to the path so we can import the modules
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
 from search_tools import CourseSearchTool, ToolManager
 from models import Course, Lesson
 from tests.mocks.mock_vector_store import MockVectorStore
+
 
 class TestCourseSearchTool(unittest.TestCase):
     """Comprehensive tests for CourseSearchTool execute method"""
@@ -29,14 +30,14 @@ class TestCourseSearchTool(unittest.TestCase):
                 Lesson(
                     lesson_number=1,
                     title="Introduction",
-                    lesson_link="https://example.com/test-course/lesson1"
+                    lesson_link="https://example.com/test-course/lesson1",
                 ),
                 Lesson(
                     lesson_number=2,
                     title="Advanced Topics",
-                    lesson_link="https://example.com/test-course/lesson2"
-                )
-            ]
+                    lesson_link="https://example.com/test-course/lesson2",
+                ),
+            ],
         )
 
         self.mock_vector_store.add_course_metadata(test_course)
@@ -74,9 +75,7 @@ class TestCourseSearchTool(unittest.TestCase):
     def test_search_with_both_course_and_lesson_filters(self):
         """Test search with both course and lesson filters"""
         result = self.search_tool.execute(
-            query="test query",
-            course_name="Test Course",
-            lesson_number=1
+            query="test query", course_name="Test Course", lesson_number=1
         )
 
         # Should return results filtered by both course and lesson
@@ -94,10 +93,7 @@ class TestCourseSearchTool(unittest.TestCase):
 
     def test_search_with_invalid_course_name(self):
         """Test search with invalid course name"""
-        result = self.search_tool.execute(
-            query="test query",
-            course_name="invalid course name"
-        )
+        result = self.search_tool.execute(query="test query", course_name="invalid course name")
 
         # Should return error about course not found
         self.assertIsInstance(result, str)
@@ -106,10 +102,7 @@ class TestCourseSearchTool(unittest.TestCase):
     def test_search_with_invalid_lesson_number(self):
         """Test search with invalid lesson number"""
         # This should still work but return no results for that specific lesson
-        result = self.search_tool.execute(
-            query="test query",
-            lesson_number=999
-        )
+        result = self.search_tool.execute(query="test query", lesson_number=999)
 
         # Should return formatted results (mock doesn't validate lesson numbers)
         self.assertIsInstance(result, str)
@@ -129,8 +122,8 @@ class TestCourseSearchTool(unittest.TestCase):
         # Check first source for HTML link formatting
         first_source = sources[0]
         self.assertIn("<a href=", first_source)
-        self.assertIn("target=\"_blank\"", first_source)
-        self.assertIn("rel=\"noopener noreferrer\"", first_source)
+        self.assertIn('target="_blank"', first_source)
+        self.assertIn('rel="noopener noreferrer"', first_source)
 
     def test_source_tracking_functionality(self):
         """Test source tracking functionality"""
@@ -220,5 +213,6 @@ class TestCourseSearchTool(unittest.TestCase):
         self.assertTrue(len(result1) > 0)
         self.assertTrue(len(result2) > 0)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

@@ -5,34 +5,37 @@ import os
 import sys
 
 # Add the backend directory to the path so we can import the modules
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 
 # Mock the openai module to avoid real API calls
 with open("tests/mocks/mock_openai.py", "r") as f:
     mock_code = f.read()
 
 # Create a new module and execute the code in its namespace
-openai = type(sys)('openai')
-sys.modules['openai'] = openai
+openai = type(sys)("openai")
+sys.modules["openai"] = openai
 exec(mock_code, openai.__dict__)
 
 # Try to import real vector store, but use mock if not available
 try:
     from vector_store import VectorStore
     from models import Course
+
     REAL_CHROMADB_AVAILABLE = True
 except ImportError:
     # Use mock vector store if real ChromaDB not available
     with open("tests/mocks/mock_vector_store_module.py", "r") as f:
         vector_store_code = f.read()
 
-    vector_store = type(sys)('vector_store')
-    sys.modules['vector_store'] = vector_store
+    vector_store = type(sys)("vector_store")
+    sys.modules["vector_store"] = vector_store
     exec(vector_store_code, vector_store.__dict__)
 
     from vector_store import VectorStore
     from models import Course
+
     REAL_CHROMADB_AVAILABLE = False
+
 
 class TestChromaIntegration(unittest.TestCase):
     """Integration tests using real ChromaDB operations or mocks"""
@@ -41,15 +44,14 @@ class TestChromaIntegration(unittest.TestCase):
     def setUpClass(cls):
         """Setup with real ChromaDB if available, otherwise use mock"""
         if not REAL_CHROMADB_AVAILABLE:
-            print("ℹ️  Using mock ChromaDB - install chromadb and sentence-transformers for real tests")
+            print(
+                "ℹ️  Using mock ChromaDB - install chromadb and sentence-transformers for real tests"
+            )
 
     def setUp(self):
         """Setup temporary ChromaDB instance"""
         self.temp_dir = tempfile.mkdtemp()
-        self.vector_store = VectorStore(
-            self.temp_dir,
-            'all-MiniLM-L6-v2'
-        )
+        self.vector_store = VectorStore(self.temp_dir, "all-MiniLM-L6-v2")
 
     def tearDown(self):
         """Cleanup temporary database"""
@@ -60,15 +62,12 @@ class TestChromaIntegration(unittest.TestCase):
         """Test actual vector similarity search"""
         # Add a test document
         test_content = "This is a test document for vector search."
-        metadata = {'course_title': 'Test Course', 'lesson_number': 1}
+        metadata = {"course_title": "Test Course", "lesson_number": 1}
 
         # Add content to vector store
         from models import CourseChunk
-        chunk = CourseChunk(
-            content=test_content,
-            course_title='Test Course',
-            lesson_number=1
-        )
+
+        chunk = CourseChunk(content=test_content, course_title="Test Course", lesson_number=1)
         self.vector_store.add_course_content([chunk])
 
         # Test search
@@ -82,7 +81,7 @@ class TestChromaIntegration(unittest.TestCase):
             title="Integration Test Course",
             course_link="https://example.com/course",
             instructor="Test Instructor",
-            lessons=[]
+            lessons=[],
         )
 
         self.vector_store.add_course_metadata(course)
@@ -96,7 +95,7 @@ class TestChromaIntegration(unittest.TestCase):
         courses = [
             Course(title="Course 1", instructor="Instructor 1"),
             Course(title="Course 2", instructor="Instructor 2"),
-            Course(title="Course 3", instructor="Instructor 3")
+            Course(title="Course 3", instructor="Instructor 3"),
         ]
 
         for course in courses:
@@ -113,15 +112,14 @@ class TestChromaIntegration(unittest.TestCase):
         """Test that vector store persists data"""
         # Add test data
         from models import CourseChunk
+
         chunk = CourseChunk(
-            content="Persistence test content",
-            course_title="Persistence Course",
-            lesson_number=1
+            content="Persistence test content", course_title="Persistence Course", lesson_number=1
         )
         self.vector_store.add_course_content([chunk])
 
         # Create new vector store instance pointing to same directory
-        vector_store2 = VectorStore(self.temp_dir, 'all-MiniLM-L6-v2')
+        vector_store2 = VectorStore(self.temp_dir, "all-MiniLM-L6-v2")
 
         # Should find the same data
         results = vector_store2.search("Persistence test")
@@ -133,7 +131,7 @@ class TestChromaIntegration(unittest.TestCase):
         courses = [
             Course(title="Advanced Python Programming", instructor="Instructor A"),
             Course(title="Python Programming Basics", instructor="Instructor B"),
-            Course(title="Python for Data Science", instructor="Instructor C")
+            Course(title="Python for Data Science", instructor="Instructor C"),
         ]
 
         for course in courses:
@@ -155,7 +153,7 @@ class TestChromaIntegration(unittest.TestCase):
             chunk = CourseChunk(
                 content=f"Test content for document {i}",
                 course_title="Performance Test Course",
-                lesson_number=i + 1
+                lesson_number=i + 1,
             )
             chunks.append(chunk)
 
@@ -172,5 +170,6 @@ class TestChromaIntegration(unittest.TestCase):
         self.assertLess(add_time, 5.0)  # Should be reasonably fast
         self.assertLess(search_time, 2.0)  # Should be reasonably fast
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

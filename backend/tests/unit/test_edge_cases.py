@@ -3,7 +3,7 @@ import sys
 import os
 
 # Add the backend directory to the path so we can import the modules
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 
 # Mock the openai module before importing ai_generator
 # Read the mock file content and execute it
@@ -11,20 +11,21 @@ with open("tests/mocks/mock_openai.py", "r") as f:
     mock_code = f.read()
 
 # Create a new module and execute the code in its namespace
-openai = type(sys)('openai')
-sys.modules['openai'] = openai
+openai = type(sys)("openai")
+sys.modules["openai"] = openai
 exec(mock_code, openai.__dict__)
 
 # Mock the vector_store module to avoid chromadb and sentence-transformers dependencies
 with open("tests/mocks/mock_vector_store_module.py", "r") as f:
     vector_store_code = f.read()
 
-vector_store = type(sys)('vector_store')
-sys.modules['vector_store'] = vector_store
+vector_store = type(sys)("vector_store")
+sys.modules["vector_store"] = vector_store
 exec(vector_store_code, vector_store.__dict__)
 
 from search_tools import CourseSearchTool
 from ai_generator import AIGenerator
+
 
 class TestEdgeCases(unittest.TestCase):
     """Additional edge case tests to complement existing coverage"""
@@ -32,19 +33,24 @@ class TestEdgeCases(unittest.TestCase):
     def setUp(self):
         """Setup test fixtures"""
         # Create mock configuration
-        self.config = type('Config', (), {
-            'OPENROUTER_API_KEY': 'test-key',
-            'OPENROUTER_MODEL': 'test-model',
-            'CHROMA_PATH': './test_chroma',
-            'EMBEDDING_MODEL': 'test-embedding',
-            'CHUNK_SIZE': 800,
-            'CHUNK_OVERLAP': 100,
-            'MAX_RESULTS': 5,
-            'MAX_HISTORY': 2
-        })()
+        self.config = type(
+            "Config",
+            (),
+            {
+                "OPENROUTER_API_KEY": "test-key",
+                "OPENROUTER_MODEL": "test-model",
+                "CHROMA_PATH": "./test_chroma",
+                "EMBEDDING_MODEL": "test-embedding",
+                "CHUNK_SIZE": 800,
+                "CHUNK_OVERLAP": 100,
+                "MAX_RESULTS": 5,
+                "MAX_HISTORY": 2,
+            },
+        )()
 
         # Create mock vector store for search tool tests
         from tests.mocks.mock_vector_store import MockVectorStore
+
         self.mock_store = MockVectorStore()
         self.search_tool = CourseSearchTool(self.mock_store)
 
@@ -59,7 +65,7 @@ class TestEdgeCases(unittest.TestCase):
             "Explain 日本語の概念",
             "Help with русский текст",
             "Question with émojis 🚀🎯💡",
-            "Mixed: English, 中文, 日本語, émoji 🚀"
+            "Mixed: English, 中文, 日本語, émoji 🚀",
         ]
 
         for query in unicode_queries:
@@ -83,7 +89,7 @@ class TestEdgeCases(unittest.TestCase):
             "SQL injection attempt:'; DROP TABLE courses; --",
             "Math symbols: ∑∫∆∇∂∀∃∞≈≠≤≥",
             "Currency: €£¥₹₽₿",
-            "Mixed quotes: 'single' \"double\" `backtick`"
+            "Mixed quotes: 'single' \"double\" `backtick`",
         ]
 
         for query in special_queries:
@@ -107,8 +113,7 @@ class TestEdgeCases(unittest.TestCase):
         for history in edge_case_histories:
             try:
                 response = self.ai_gen.generate_response(
-                    query="test query",
-                    conversation_history=history
+                    query="test query", conversation_history=history
                 )
                 self.assertIsInstance(response, str)
                 self.assertTrue(len(response) > 0, f"Failed for history: {repr(history)}")
@@ -208,5 +213,6 @@ class TestEdgeCases(unittest.TestCase):
             self.assertIsInstance(result, str)
             self.assertTrue(len(result) > 0, f"Failed for query: {query}")
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

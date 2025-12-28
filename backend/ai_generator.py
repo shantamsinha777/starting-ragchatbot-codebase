@@ -2,6 +2,7 @@ import openai
 import json
 from typing import List, Optional, Dict, Any, Tuple
 
+
 class AIGenerator:
     """Handles interactions with OpenRouter API (OpenAI format) for generating responses"""
 
@@ -63,23 +64,19 @@ Final Answer:
 
     def __init__(self, api_key: str, model: str):
         """Initialize OpenRouter client using OpenAI-compatible format"""
-        self.client = openai.OpenAI(
-            base_url="https://openrouter.ai/api/v1",
-            api_key=api_key
-        )
+        self.client = openai.OpenAI(base_url="https://openrouter.ai/api/v1", api_key=api_key)
         self.model = model
 
         # Pre-build base API parameters
-        self.base_params = {
-            "model": self.model,
-            "temperature": 0,
-            "max_tokens": 800
-        }
+        self.base_params = {"model": self.model, "temperature": 0, "max_tokens": 800}
 
-    def generate_response(self, query: str,
-                         conversation_history: Optional[str] = None,
-                         tools: Optional[List] = None,
-                         tool_manager=None) -> str:
+    def generate_response(
+        self,
+        query: str,
+        conversation_history: Optional[str] = None,
+        tools: Optional[List] = None,
+        tool_manager=None,
+    ) -> str:
         """
         Generate AI response with sequential tool calling support (up to 2 rounds).
 
@@ -115,8 +112,8 @@ Final Answer:
             # Debug logging
             print(f"[DEBUG] Round {tool_rounds + 1} - {len(full_message_history)} messages")
             for i, msg in enumerate(full_message_history[-5:]):  # Show last 5
-                preview = str(msg.get('content', ''))[:60]
-                if 'tool_calls' in msg:
+                preview = str(msg.get("content", ""))[:60]
+                if "tool_calls" in msg:
                     preview = f"tool_calls: {[tc['function']['name'] for tc in msg['tool_calls']]}"
                 print(f"  [{i}] {msg['role']}: {preview}")
 
@@ -136,11 +133,17 @@ Final Answer:
 
                 # Add assistant's tool call message
                 message = response.choices[0].message
-                full_message_history.append({
-                    "role": "assistant",
-                    "content": message.content,
-                    "tool_calls": [tc.to_dict() for tc in message.tool_calls] if message.tool_calls else None
-                })
+                full_message_history.append(
+                    {
+                        "role": "assistant",
+                        "content": message.content,
+                        "tool_calls": (
+                            [tc.to_dict() for tc in message.tool_calls]
+                            if message.tool_calls
+                            else None
+                        ),
+                    }
+                )
 
                 # Execute tools and add results
                 tool_results, sources = self._execute_tool_calls(message.tool_calls, tool_manager)
@@ -183,39 +186,32 @@ Final Answer:
             return []
 
         messages = []
-        lines = history_str.split('\n')
+        lines = history_str.split("\n")
         current_role = None
         current_content = []
 
         for line in lines:
             if line.startswith("User: "):
                 if current_role and current_content:
-                    messages.append({
-                        "role": current_role,
-                        "content": "\n".join(current_content)
-                    })
+                    messages.append({"role": current_role, "content": "\n".join(current_content)})
                 current_role = "user"
                 current_content = [line[6:]]
             elif line.startswith("Assistant: "):
                 if current_role and current_content:
-                    messages.append({
-                        "role": current_role,
-                        "content": "\n".join(current_content)
-                    })
+                    messages.append({"role": current_role, "content": "\n".join(current_content)})
                 current_role = "assistant"
                 current_content = [line[11:]]
             elif current_content:
                 current_content.append(line)
 
         if current_role and current_content:
-            messages.append({
-                "role": current_role,
-                "content": "\n".join(current_content)
-            })
+            messages.append({"role": current_role, "content": "\n".join(current_content)})
 
         return messages
 
-    def _build_api_params(self, messages: List[Dict], tools: Optional[List], tool_rounds: int) -> Dict[str, Any]:
+    def _build_api_params(
+        self, messages: List[Dict], tools: Optional[List], tool_rounds: int
+    ) -> Dict[str, Any]:
         """
         Build API parameters including system prompt and optional tools.
 
@@ -241,14 +237,16 @@ Final Answer:
             openai_tools = []
             for tool in tools:
                 if "input_schema" in tool:
-                    openai_tools.append({
-                        "type": "function",
-                        "function": {
-                            "name": tool["name"],
-                            "description": tool["description"],
-                            "parameters": tool["input_schema"]
+                    openai_tools.append(
+                        {
+                            "type": "function",
+                            "function": {
+                                "name": tool["name"],
+                                "description": tool["description"],
+                                "parameters": tool["input_schema"],
+                            },
                         }
-                    })
+                    )
                 else:
                     openai_tools.append(tool)
 
@@ -285,19 +283,21 @@ Final Answer:
                 tool_result = tool_manager.execute_tool(function_name, **function_args)
 
                 # Track sources if available
-                if hasattr(tool_manager, 'get_last_sources'):
+                if hasattr(tool_manager, "get_last_sources"):
                     sources = tool_manager.get_last_sources()
                     if sources:
                         all_sources.extend(sources)
             except Exception as e:
                 tool_result = f"Tool execution error: {str(e)}"
 
-            tool_results.append({
-                "tool_call_id": tool_call.id,
-                "role": "tool",
-                "name": function_name,
-                "content": tool_result
-            })
+            tool_results.append(
+                {
+                    "tool_call_id": tool_call.id,
+                    "role": "tool",
+                    "name": function_name,
+                    "content": tool_result,
+                }
+            )
 
             print(f"[AI_DEBUG] Tool result length: {len(tool_result)} chars")
 

@@ -2,25 +2,27 @@ from typing import List, Dict, Any, Optional
 from dataclasses import dataclass
 from models import Course, CourseChunk
 
+
 @dataclass
 class SearchResults:
     """Container for search results with metadata"""
+
     documents: List[str]
     metadata: List[Dict[str, Any]]
     distances: List[float]
     error: Optional[str] = None
 
     @classmethod
-    def from_chroma(cls, chroma_results: Dict) -> 'SearchResults':
+    def from_chroma(cls, chroma_results: Dict) -> "SearchResults":
         """Create SearchResults from ChromaDB query results"""
         return cls(
-            documents=chroma_results['documents'][0] if chroma_results['documents'] else [],
-            metadata=chroma_results['metadatas'][0] if chroma_results['metadatas'] else [],
-            distances=chroma_results['distances'][0] if chroma_results['distances'] else []
+            documents=chroma_results["documents"][0] if chroma_results["documents"] else [],
+            metadata=chroma_results["metadatas"][0] if chroma_results["metadatas"] else [],
+            distances=chroma_results["distances"][0] if chroma_results["distances"] else [],
         )
 
     @classmethod
-    def empty(cls, error_msg: str) -> 'SearchResults':
+    def empty(cls, error_msg: str) -> "SearchResults":
         """Create empty results with error message"""
         return cls(documents=[], metadata=[], distances=[], error=error_msg)
 
@@ -28,19 +30,27 @@ class SearchResults:
         """Check if results are empty"""
         return len(self.documents) == 0
 
+
 class MockVectorStore:
     """Mock implementation of VectorStore for testing"""
 
-    def __init__(self, chroma_path: str = "./test_chroma", embedding_model: str = "test-model", max_results: int = 5):
+    def __init__(
+        self,
+        chroma_path: str = "./test_chroma",
+        embedding_model: str = "test-model",
+        max_results: int = 5,
+    ):
         self.max_results = max_results
         self.courses = {}
         self.content_chunks = []
 
-    def search(self,
-               query: str,
-               course_name: Optional[str] = None,
-               lesson_number: Optional[int] = None,
-               limit: Optional[int] = None) -> SearchResults:
+    def search(
+        self,
+        query: str,
+        course_name: Optional[str] = None,
+        lesson_number: Optional[int] = None,
+        limit: Optional[int] = None,
+    ) -> SearchResults:
         """Mock search implementation"""
         # Check if we should return empty results based on query
         if "no results" in query.lower():
@@ -53,27 +63,23 @@ class MockVectorStore:
         # Return mock search results
         mock_documents = [
             "This is a test document about course content and search functionality.",
-            "Another relevant document that matches the search query."
+            "Another relevant document that matches the search query.",
         ]
 
         mock_metadata = [
             {
-                'course_title': course_name or 'Test Course',
-                'lesson_number': lesson_number if lesson_number is not None else 1,
-                'lesson_link': 'https://example.com/test-course/lesson1'
+                "course_title": course_name or "Test Course",
+                "lesson_number": lesson_number if lesson_number is not None else 1,
+                "lesson_link": "https://example.com/test-course/lesson1",
             },
             {
-                'course_title': course_name or 'Test Course',
-                'lesson_number': lesson_number if lesson_number is not None else 2,
-                'lesson_link': 'https://example.com/test-course/lesson2'
-            }
+                "course_title": course_name or "Test Course",
+                "lesson_number": lesson_number if lesson_number is not None else 2,
+                "lesson_link": "https://example.com/test-course/lesson2",
+            },
         ]
 
-        return SearchResults(
-            documents=mock_documents,
-            metadata=mock_metadata,
-            distances=[0.1, 0.2]
-        )
+        return SearchResults(documents=mock_documents, metadata=mock_metadata, distances=[0.1, 0.2])
 
     def _resolve_course_name(self, course_name: str) -> Optional[str]:
         """Mock course name resolution"""
@@ -81,7 +87,9 @@ class MockVectorStore:
             return None
         return course_name or "Test Course"
 
-    def _build_filter(self, course_title: Optional[str], lesson_number: Optional[int]) -> Optional[Dict]:
+    def _build_filter(
+        self, course_title: Optional[str], lesson_number: Optional[int]
+    ) -> Optional[Dict]:
         """Mock filter building"""
         return {}
 
@@ -110,21 +118,21 @@ class MockVectorStore:
         """Mock getting all courses metadata"""
         return [
             {
-                'title': 'Test Course',
-                'course_link': 'https://example.com/test-course',
-                'instructor': 'Test Instructor',
-                'lessons': [
+                "title": "Test Course",
+                "course_link": "https://example.com/test-course",
+                "instructor": "Test Instructor",
+                "lessons": [
                     {
-                        'lesson_number': 1,
-                        'lesson_title': 'Introduction',
-                        'lesson_link': 'https://example.com/test-course/lesson1'
+                        "lesson_number": 1,
+                        "lesson_title": "Introduction",
+                        "lesson_link": "https://example.com/test-course/lesson1",
                     },
                     {
-                        'lesson_number': 2,
-                        'lesson_title': 'Advanced Topics',
-                        'lesson_link': 'https://example.com/test-course/lesson2'
-                    }
-                ]
+                        "lesson_number": 2,
+                        "lesson_title": "Advanced Topics",
+                        "lesson_link": "https://example.com/test-course/lesson2",
+                    },
+                ],
             }
         ]
 

@@ -3,9 +3,10 @@ import sys
 import os
 
 # Add the backend directory to the path so we can import the modules
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 
 from session_manager import SessionManager
+
 
 class TestSessionManagement(unittest.TestCase):
     """Integration tests for session management functionality"""
@@ -44,7 +45,7 @@ class TestSessionManagement(unittest.TestCase):
         history = self.session_manager.get_conversation_history(session_id)
 
         # Should only contain the last 2 exchanges (MAX_HISTORY)
-        lines = history.split('\n')
+        lines = history.split("\n")
         self.assertLessEqual(len([l for l in lines if l.strip()]), 4)  # 2 exchanges = 4 lines
 
     def test_session_cleanup(self):
@@ -110,7 +111,7 @@ class TestSessionManagement(unittest.TestCase):
             "user_with_underscores",
             "user123",
             "user with spaces",
-            "user/with/slashes"
+            "user/with/slashes",
         ]
 
         for session_id in special_session_ids:
@@ -178,5 +179,6 @@ class TestSessionManagement(unittest.TestCase):
         self.assertIn("Second", history3)
         self.assertIn("Second Response", history3)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

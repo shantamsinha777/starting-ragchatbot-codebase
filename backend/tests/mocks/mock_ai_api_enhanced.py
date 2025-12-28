@@ -20,7 +20,9 @@ class MockOpenAIClientEnhanced:
     - Verify message history
     """
 
-    def __init__(self, base_url: str = "https://test.openrouter.ai/api/v1", api_key: str = "test-key"):
+    def __init__(
+        self, base_url: str = "https://test.openrouter.ai/api/v1", api_key: str = "test-key"
+    ):
         self.base_url = base_url
         self.api_key = api_key
         self.call_count = 0
@@ -34,9 +36,9 @@ class MockOpenAIClientEnhanced:
     @property
     def chat(self):
         """Property for chat.completions.create() access pattern"""
-        return type('Chat', (), {'completions': self.completions()})()
+        return type("Chat", (), {"completions": self.completions()})()
 
-    def set_response_strategy(self, strategy: Callable[[int, Dict], 'MockChatCompletion']):
+    def set_response_strategy(self, strategy: Callable[[int, Dict], "MockChatCompletion"]):
         """
         Set a response strategy function.
 
@@ -66,23 +68,26 @@ class MockOpenAIClientEnhanced:
             return False, "No requests made"
 
         for i, request in enumerate(self.request_history):
-            messages = request.get('messages', [])
+            messages = request.get("messages", [])
 
             # Check that tool messages follow their corresponding tool_calls
-            tool_messages = [m for m in messages if m.get('role') == 'tool']
+            tool_messages = [m for m in messages if m.get("role") == "tool"]
             assistant_tool_calls = []
 
             for msg in messages:
-                if msg.get('role') == 'assistant' and 'tool_calls' in msg and msg['tool_calls']:
-                    assistant_tool_calls.extend(msg['tool_calls'])
+                if msg.get("role") == "assistant" and "tool_calls" in msg and msg["tool_calls"]:
+                    assistant_tool_calls.extend(msg["tool_calls"])
 
             # Verify tool_messages have corresponding tool_calls
             for tool_msg in tool_messages:
-                tool_call_id = tool_msg.get('tool_call_id')
+                tool_call_id = tool_msg.get("tool_call_id")
                 if tool_call_id:
-                    found = any(tc.get('id') == tool_call_id for tc in assistant_tool_calls)
+                    found = any(tc.get("id") == tool_call_id for tc in assistant_tool_calls)
                     if not found:
-                        return False, f"Request {i}: Tool message {tool_call_id} has no matching tool call"
+                        return (
+                            False,
+                            f"Request {i}: Tool message {tool_call_id} has no matching tool call",
+                        )
 
         return True, "Valid message chain"
 
@@ -93,7 +98,7 @@ class MockChatCompletionsEnhanced:
     def __init__(self, client: MockOpenAIClientEnhanced):
         self.client = client
 
-    def create(self, **kwargs) -> 'MockChatCompletion':
+    def create(self, **kwargs) -> "MockChatCompletion":
         """Create method that uses response strategy or defaults"""
         self.client.call_count += 1
         self.client.request_history.append(kwargs)
@@ -103,18 +108,18 @@ class MockChatCompletionsEnhanced:
             return self.client.response_strategy(self.client.call_count, kwargs)
 
         # Default strategy: check if tools present and decide based on messages
-        messages = kwargs.get('messages', [])
-        tools = kwargs.get('tools', [])
+        messages = kwargs.get("messages", [])
+        tools = kwargs.get("tools", [])
 
         # Look for tool call trigger phrases
         has_tools = bool(tools)
-        user_content = ' '.join([m.get('content', '') for m in messages if m.get('role') == 'user'])
+        user_content = " ".join([m.get("content", "") for m in messages if m.get("role") == "user"])
 
         # Round 1: If tools present and user asks for search/outline
         if has_tools and self.client.call_count == 1:
-            if 'outline' in user_content.lower():
+            if "outline" in user_content.lower():
                 return self._create_outline_tool_response()
-            elif 'search' in user_content.lower():
+            elif "search" in user_content.lower():
                 return self._create_search_tool_response()
             else:
                 # Default to outline if tools requested
@@ -123,7 +128,7 @@ class MockChatCompletionsEnhanced:
         # Round 2: Check message history to determine next action
         elif has_tools and self.client.call_count == 2:
             # Check if Round 1 result is in history
-            if any('Lesson 4' in str(m.get('content', '')) for m in messages):
+            if any("Lesson 4" in str(m.get("content", "")) for m in messages):
                 # Second round: search based on lesson info
                 return self._create_search_tool_response()
             else:
@@ -134,55 +139,55 @@ class MockChatCompletionsEnhanced:
         else:
             return self._create_final_response()
 
-    def _create_outline_tool_response(self) -> 'MockChatCompletion':
+    def _create_outline_tool_response(self) -> "MockChatCompletion":
         """Simulate get_course_outline tool call"""
         tool_call = {
-            'id': 'call_outline_123',
-            'type': 'function',
-            'function': {
-                'name': 'get_course_outline',
-                'arguments': json.dumps({'course_name': 'Python Basics'})
-            }
+            "id": "call_outline_123",
+            "type": "function",
+            "function": {
+                "name": "get_course_outline",
+                "arguments": json.dumps({"course_name": "Python Basics"}),
+            },
         }
 
         return MockChatCompletion(
             choices=[
                 MockChoice(
-                    finish_reason='tool_calls',
-                    message=MockMessage(content=None, tool_calls=[tool_call])
+                    finish_reason="tool_calls",
+                    message=MockMessage(content=None, tool_calls=[tool_call]),
                 )
             ]
         )
 
-    def _create_search_tool_response(self) -> 'MockChatCompletion':
+    def _create_search_tool_response(self) -> "MockChatCompletion":
         """Simulate search_course_content tool call"""
         tool_call = {
-            'id': 'call_search_456',
-            'type': 'function',
-            'function': {
-                'name': 'search_course_content',
-                'arguments': json.dumps({'query': 'Advanced Python topics', 'course_name': None})
-            }
+            "id": "call_search_456",
+            "type": "function",
+            "function": {
+                "name": "search_course_content",
+                "arguments": json.dumps({"query": "Advanced Python topics", "course_name": None}),
+            },
         }
 
         return MockChatCompletion(
             choices=[
                 MockChoice(
-                    finish_reason='tool_calls',
-                    message=MockMessage(content=None, tool_calls=[tool_call])
+                    finish_reason="tool_calls",
+                    message=MockMessage(content=None, tool_calls=[tool_call]),
                 )
             ]
         )
 
-    def _create_final_response(self) -> 'MockChatCompletion':
+    def _create_final_response(self) -> "MockChatCompletion":
         """Simulate final synthesis response"""
         return MockChatCompletion(
             choices=[
                 MockChoice(
-                    finish_reason='stop',
+                    finish_reason="stop",
                     message=MockMessage(
                         content="Based on the course outline and content search, Python Basics Lesson 4 covers Advanced Python topics. The Data Structures Mastery course also discusses similar concepts."
-                    )
+                    ),
                 )
             ]
         )
@@ -191,14 +196,14 @@ class MockChatCompletionsEnhanced:
 class MockChatCompletion:
     """Mock chat completion response"""
 
-    def __init__(self, choices: List['MockChoice']):
+    def __init__(self, choices: List["MockChoice"]):
         self.choices = choices
 
 
 class MockChoice:
     """Mock choice in chat completion"""
 
-    def __init__(self, finish_reason: str, message: 'MockMessage'):
+    def __init__(self, finish_reason: str, message: "MockMessage"):
         self.finish_reason = finish_reason
         self.message = message
 
@@ -221,10 +226,7 @@ class MockMessage:
 
     def to_dict(self):
         """Convert to dictionary for compatibility"""
-        return {
-            'content': self.content,
-            'tool_calls': self.tool_calls
-        }
+        return {"content": self.content, "tool_calls": self.tool_calls}
 
 
 class MockToolCall:
@@ -235,12 +237,12 @@ class MockToolCall:
         self.function = MockFunction(name=function_name, arguments=function_args)
 
     @classmethod
-    def from_dict(cls, data: Dict) -> 'MockToolCall':
+    def from_dict(cls, data: Dict) -> "MockToolCall":
         """Create from dictionary"""
         return cls(
-            call_id=data['id'],
-            function_name=data['function']['name'],
-            function_args=json.loads(data['function']['arguments'])
+            call_id=data["id"],
+            function_name=data["function"]["name"],
+            function_args=json.loads(data["function"]["arguments"]),
         )
 
 
@@ -263,39 +265,42 @@ def create_sequential_strategy(tool_rounds: int = 2):
     Returns:
         Response strategy function
     """
+
     def strategy(call_count: int, request_kwargs: Dict) -> MockChatCompletion:
         # Round 1: get_course_outline
         if call_count == 1:
             tool_call = {
-                'id': 'call_round1',
-                'type': 'function',
-                'function': {
-                    'name': 'get_course_outline',
-                    'arguments': json.dumps({'course_name': 'Test Course'})
-                }
+                "id": "call_round1",
+                "type": "function",
+                "function": {
+                    "name": "get_course_outline",
+                    "arguments": json.dumps({"course_name": "Test Course"}),
+                },
             }
             return MockChatCompletion(
-                choices=[MockChoice('tool_calls', MockMessage(None, [tool_call]))]
+                choices=[MockChoice("tool_calls", MockMessage(None, [tool_call]))]
             )
 
         # Round 2: search_course_content (if tool_rounds >= 2)
         elif call_count == 2 and tool_rounds >= 2:
             tool_call = {
-                'id': 'call_round2',
-                'type': 'function',
-                'function': {
-                    'name': 'search_course_content',
-                    'arguments': json.dumps({'query': 'test topic'})
-                }
+                "id": "call_round2",
+                "type": "function",
+                "function": {
+                    "name": "search_course_content",
+                    "arguments": json.dumps({"query": "test topic"}),
+                },
             }
             return MockChatCompletion(
-                choices=[MockChoice('tool_calls', MockMessage(None, [tool_call]))]
+                choices=[MockChoice("tool_calls", MockMessage(None, [tool_call]))]
             )
 
         # Round 3: Final synthesis
         else:
             return MockChatCompletion(
-                choices=[MockChoice('stop', MockMessage("Final synthesized answer after tool calls"))]
+                choices=[
+                    MockChoice("stop", MockMessage("Final synthesized answer after tool calls"))
+                ]
             )
 
     return strategy
@@ -306,16 +311,14 @@ def always_tool_call_strategy(call_count: int, request_kwargs: Dict) -> MockChat
     """Always returns tool_calls, even beyond round 2 (for testing enforcement)"""
     if call_count <= 3:
         tool_call = {
-            'id': f'call_{call_count}',
-            'type': 'function',
-            'function': {
-                'name': 'search_course_content',
-                'arguments': json.dumps({'query': f'test_{call_count}'})
-            }
+            "id": f"call_{call_count}",
+            "type": "function",
+            "function": {
+                "name": "search_course_content",
+                "arguments": json.dumps({"query": f"test_{call_count}"}),
+            },
         }
         return MockChatCompletion(
-            choices=[MockChoice('tool_calls', MockMessage(None, [tool_call]))]
+            choices=[MockChoice("tool_calls", MockMessage(None, [tool_call]))]
         )
-    return MockChatCompletion(
-        choices=[MockChoice('stop', MockMessage("Should never reach here"))]
-    )
+    return MockChatCompletion(choices=[MockChoice("stop", MockMessage("Should never reach here"))])
