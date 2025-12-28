@@ -42,7 +42,7 @@ jobs:
             "NON_INTERACTIVE_MODE": true,
             "OPENAI_API_KEY": "${{ secrets.OPENAI_API_KEY }}",
             "OPENAI_BASE_URL": "https://openrouter.ai/api/v1/chat/completions",
-            "OPENAI_MODEL": "mistralai/devstral-2512:free"
+            "OPENAI_MODEL": "xiaomi/mimo-v2-flash:free"
           }
           EOF
         shell: bash
