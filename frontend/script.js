@@ -3,39 +3,36 @@ const API_URL = '/api';
 
 // Global state
 let currentSessionId = null;
+let isDarkMode = true;
 
 // DOM elements
-let chatMessages, chatInput, sendButton, totalCourses, courseTitles;
+let chatMessages, chatInput, sendButton, totalCourses, courseTitles, themeToggle;
 
-// Initialize
 document.addEventListener('DOMContentLoaded', () => {
-    // Get DOM elements after page loads
     chatMessages = document.getElementById('chatMessages');
     chatInput = document.getElementById('chatInput');
     sendButton = document.getElementById('sendButton');
     totalCourses = document.getElementById('totalCourses');
     courseTitles = document.getElementById('courseTitles');
+    themeToggle = document.getElementById('themeToggle');
     
+    loadThemePreference();
     setupEventListeners();
     createNewSession();
     loadCourseStats();
 });
 
-// Event Listeners
 function setupEventListeners() {
-    // Chat functionality
     sendButton.addEventListener('click', sendMessage);
     chatInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') sendMessage();
     });
 
-    // New Chat button
     const newChatBtn = document.getElementById('newChatBtn');
     if (newChatBtn) {
         newChatBtn.addEventListener('click', createNewSession);
     }
 
-    // Suggested questions
     document.querySelectorAll('.suggested-item').forEach(button => {
         button.addEventListener('click', (e) => {
             const question = e.target.getAttribute('data-question');
@@ -43,23 +40,72 @@ function setupEventListeners() {
             sendMessage();
         });
     });
+
+    if (themeToggle) {
+        themeToggle.addEventListener('click', toggleTheme);
+        themeToggle.addEventListener('keydown', (e) => {
+            if (e.key === ' ' || e.key === 'Enter') {
+                e.preventDefault();
+                toggleTheme();
+            }
+        });
+    }
 }
 
+function toggleTheme() {
+    isDarkMode = !isDarkMode;
+    
+    if (isDarkMode) {
+        document.documentElement.classList.remove('light-mode');
+    } else {
+        document.documentElement.classList.add('light-mode');
+    }
+    
+    try {
+        localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+    } catch (e) {
+        console.log('localStorage not available:', e);
+    }
+    
+    if (themeToggle) {
+        themeToggle.setAttribute('aria-label', isDarkMode ? 'Switch to light mode' : 'Switch to dark mode');
+    }
+}
 
-// Chat Functions
+function loadThemePreference() {
+    try {
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'light') {
+            isDarkMode = false;
+            document.documentElement.classList.add('light-mode');
+            if (themeToggle) {
+                themeToggle.setAttribute('aria-label', 'Switch to dark mode');
+            }
+        } else {
+            isDarkMode = true;
+            if (themeToggle) {
+                themeToggle.setAttribute('aria-label', 'Switch to light mode');
+            }
+        }
+    } catch (e) {
+        console.log('localStorage not available:', e);
+        isDarkMode = true;
+        if (themeToggle) {
+            themeToggle.setAttribute('aria-label', 'Switch to light mode');
+        }
+    }
+}
+
 async function sendMessage() {
     const query = chatInput.value.trim();
     if (!query) return;
 
-    // Disable input
     chatInput.value = '';
     chatInput.disabled = true;
     sendButton.disabled = true;
 
-    // Add user message
     addMessage(query, 'user');
 
-    // Add loading message - create a unique container for it
     const loadingMessage = createLoadingMessage();
     chatMessages.appendChild(loadingMessage);
     chatMessages.scrollTop = chatMessages.scrollHeight;
@@ -80,17 +126,14 @@ async function sendMessage() {
 
         const data = await response.json();
         
-        // Update session ID if new
         if (!currentSessionId) {
             currentSessionId = data.session_id;
         }
 
-        // Replace loading message with response
         loadingMessage.remove();
         addMessage(data.answer, 'assistant', data.sources);
 
     } catch (error) {
-        // Replace loading message with error
         loadingMessage.remove();
         addMessage(`Error: ${error.message}`, 'assistant');
     } finally {
@@ -115,41 +158,31 @@ function createLoadingMessage() {
     return messageDiv;
 }
 
-function addMessage(content, type, sources = null, isWelcome = false) {
+function addMessage(content, type, sources, isWelcome) {
     const messageId = Date.now();
     const messageDiv = document.createElement('div');
-    messageDiv.className = `message ${type}${isWelcome ? ' welcome-message' : ''}`;
-    messageDiv.id = `message-${messageId}`;
+    messageDiv.className = 'message ' + type + (isWelcome ? ' welcome-message' : '');
+    messageDiv.id = 'message-' + messageId;
     
-    // Convert markdown to HTML for assistant messages
     const displayContent = type === 'assistant' ? marked.parse(content) : escapeHtml(content);
     
-    let html = `<div class="message-content">${displayContent}</div>`;
+    let html = '<div class="message-content">' + displayContent + '</div>';
     
     if (sources && sources.length > 0) {
-        // Parse markdown format [text](url) and convert to clickable <a> tags
-        // Also handle HTML links directly from backend
         const parsedSources = sources.map(s => {
-            // Check if it's already HTML (contains <a> tag)
             if (s.includes('<a ') && s.includes('</a>')) {
-                return s; // Return HTML as-is
+                return s;
             }
-            // Check for markdown format [text](url)
             const match = s.match(/\[([^\]]+)\]\(([^)]+)\)/);
             if (match) {
                 const text = match[1];
                 const url = match[2];
-                return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="source-link">${text}</a>`;
+                return '<a href="' + url + '" target="_blank" rel="noopener noreferrer" class="source-link">' + text + '</a>';
             }
-            return s; // Return as-is if no match
+            return s;
         }).join(', ');
 
-        html += `
-            <details class="sources-collapsible">
-                <summary class="sources-header">Sources</summary>
-                <div class="sources-content">${parsedSources}</div>
-            </details>
-        `;
+        html += '<details class="sources-collapsible"><summary class="sources-header">Sources</summary><div class="sources-content">' + parsedSources + '</div></details>';
     }
     
     messageDiv.innerHTML = html;
@@ -159,14 +192,11 @@ function addMessage(content, type, sources = null, isWelcome = false) {
     return messageId;
 }
 
-// Helper function to escape HTML for user messages
 function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
 }
-
-// Removed removeMessage function - no longer needed since we handle loading differently
 
 function createNewSession() {
     currentSessionId = null;
@@ -176,26 +206,23 @@ function createNewSession() {
     }
 }
 
-// Load course statistics
 async function loadCourseStats() {
     try {
         console.log('Loading course stats...');
-        const response = await fetch(`${API_URL}/courses`);
+        const response = await fetch(API_URL + '/courses');
         if (!response.ok) throw new Error('Failed to load course stats');
         
         const data = await response.json();
         console.log('Course data received:', data);
         
-        // Update stats in UI
         if (totalCourses) {
             totalCourses.textContent = data.total_courses;
         }
         
-        // Update course titles
         if (courseTitles) {
             if (data.course_titles && data.course_titles.length > 0) {
                 courseTitles.innerHTML = data.course_titles
-                    .map(title => `<div class="course-title-item">${title}</div>`)
+                    .map(title => '<div class="course-title-item">' + title + '</div>')
                     .join('');
             } else {
                 courseTitles.innerHTML = '<span class="no-courses">No courses available</span>';
@@ -204,7 +231,6 @@ async function loadCourseStats() {
         
     } catch (error) {
         console.error('Error loading course stats:', error);
-        // Set default values on error
         if (totalCourses) {
             totalCourses.textContent = '0';
         }

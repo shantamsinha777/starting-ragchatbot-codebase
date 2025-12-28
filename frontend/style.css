@@ -5,7 +5,7 @@
     padding: 0;
 }
 
-/* CSS Variables */
+/* CSS Variables - Dark Mode (Default) */
 :root {
     --primary-color: #2563eb;
     --primary-hover: #1d4ed8;
@@ -24,6 +24,25 @@
     --welcome-border: #2563eb;
 }
 
+/* Light Mode Variables */
+:root.light-mode {
+    --primary-color: #2563eb;
+    --primary-hover: #1d4ed8;
+    --background: #f8fafc;
+    --surface: #ffffff;
+    --surface-hover: #f1f5f9;
+    --text-primary: #0f172a;
+    --text-secondary: #64748b;
+    --border-color: #e2e8f0;
+    --user-message: #2563eb;
+    --assistant-message: #f1f5f9;
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --radius: 12px;
+    --focus-ring: rgba(37, 99, 235, 0.3);
+    --welcome-bg: #dbeafe;
+    --welcome-border: #2563eb;
+}
+
 /* Base Styles */
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
@@ -34,6 +53,7 @@ body {
     overflow: hidden;
     margin: 0;
     padding: 0;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Container - Full Screen */
@@ -46,9 +66,17 @@ body {
     padding: 0;
 }
 
-/* Header - Hidden */
+/* Header - Now visible with theme toggle */
 header {
-    display: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem 2rem;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border-color);
+    position: relative;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 header h1 {
@@ -67,12 +95,69 @@ header h1 {
     margin-top: 0.5rem;
 }
 
+/* Theme Toggle Button */
+.theme-toggle {
+    position: absolute;
+    top: 1rem;
+    right: 1.5rem;
+    background: var(--background);
+    border: 1px solid var(--border-color);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    color: var(--text-primary);
+}
+
+.theme-toggle:hover {
+    background: var(--surface-hover);
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.theme-toggle:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+/* Icon rotation and fade animations */
+.sun-icon, .moon-icon {
+    position: absolute;
+    transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.sun-icon {
+    opacity: 1;
+    transform: rotate(0deg) scale(1);
+}
+
+.moon-icon {
+    opacity: 0;
+    transform: rotate(-90deg) scale(0.5);
+}
+
+/* Light mode icon states */
+:root.light-mode .sun-icon {
+    opacity: 0;
+    transform: rotate(90deg) scale(0.5);
+}
+
+:root.light-mode .moon-icon {
+    opacity: 1;
+    transform: rotate(0deg) scale(1);
+}
+
 /* Main Content Area with Sidebar */
 .main-content {
     flex: 1;
     display: flex;
     overflow: hidden;
     background: var(--background);
+    transition: background-color 0.3s ease;
 }
 
 /* Left Sidebar */
@@ -83,6 +168,7 @@ header h1 {
     padding: 1.5rem;
     overflow-y: auto;
     flex-shrink: 0;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 /* Custom Scrollbar for Sidebar */
@@ -111,33 +197,6 @@ header h1 {
     margin-bottom: 0;
 }
 
-/* Old sidebar-button CSS - kept for reference but not used */
-/*.sidebar-button {
-    width: 100%;
-    padding: 0.875rem 1.25rem;
-    background: var(--primary-color);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 0.875rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    transition: all 0.2s ease;
-}
-
-.sidebar-button:hover {
-    background: var(--primary-hover);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
-}
-
-.sidebar-button:focus {
-    outline: none;
-    box-shadow: 0 0 0 3px var(--focus-ring);
-}*/
-
 /* Main Chat Area */
 .chat-main {
     flex: 1;
@@ -146,6 +205,7 @@ header h1 {
     overflow: hidden;
     padding: 0;
     background: var(--background);
+    transition: background-color 0.3s ease;
 }
 
 /* Chat Container - Centered with Max Width */
@@ -158,6 +218,7 @@ header h1 {
     width: 100%;
     max-width: 800px;
     margin: 0;
+    transition: background-color 0.3s ease;
 }
 
 /* Chat Messages */
@@ -169,6 +230,7 @@ header h1 {
     flex-direction: column;
     gap: 1rem;
     background: var(--background);
+    transition: background-color 0.3s ease;
 }
 
 /* Custom Scrollbar */
@@ -219,6 +281,7 @@ header h1 {
     border-radius: 18px;
     word-wrap: break-word;
     line-height: 1.5;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .message.user .message-content {
@@ -269,9 +332,9 @@ header h1 {
 
 .sources-content {
     padding: 0 0.5rem 0.25rem 1.5rem;
-    color: var(--text-primary); /* Use primary text color for better readability */
-    line-height: 1.4; /* Better line spacing */
-    font-size: 0.875rem; /* Slightly larger text */
+    color: var(--text-primary);
+    line-height: 1.4;
+    font-size: 0.875rem;
 }
 
 /* Style links in sources section */
@@ -280,29 +343,40 @@ header h1 {
 .sources-content a:link,
 .sources-content a:visited,
 .sources-content a:active {
-    color: var(--text-primary) !important; /* Use primary text color for better contrast */
-    text-decoration: none !important; /* Remove underline for cleaner look */
+    color: var(--text-primary) !important;
+    text-decoration: none !important;
     cursor: pointer;
-    border-bottom: 1px dashed var(--text-secondary) !important; /* Subtle dashed underline */
-    padding-bottom: 1px; /* Add slight padding for better appearance */
-    transition: all 0.2s ease; /* Smooth hover transition */
-    background-color: rgba(255, 255, 255, 0.05) !important; /* Subtle background highlight */
-    padding: 2px 4px; /* Add padding for better click target */
-    border-radius: 3px; /* Slight rounding */
-    font-weight: 500 !important; /* Make text slightly bolder */
-    opacity: 1 !important; /* Ensure full opacity */
+    border-bottom: 1px dashed var(--text-secondary) !important;
+    padding-bottom: 1px;
+    transition: all 0.2s ease;
+    background-color: rgba(0, 0, 0, 0.05) !important;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-weight: 500 !important;
+    opacity: 1 !important;
+}
+
+:root.light-mode .sources-content a,
+:root.light-mode .sources-content a:link,
+:root.light-mode .sources-content a:visited,
+:root.light-mode .sources-content a:active {
+    background-color: rgba(0, 0, 0, 0.03) !important;
 }
 
 .sources-content a:hover {
-    color: var(--primary-color) !important; /* Change to primary color on hover */
-    border-bottom: 1px solid var(--primary-color) !important; /* Solid underline on hover */
+    color: var(--primary-color) !important;
+    border-bottom: 1px solid var(--primary-color) !important;
     text-decoration: none !important;
-    background-color: rgba(255, 255, 255, 0.1) !important; /* Stronger background on hover */
+    background-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+:root.light-mode .sources-content a:hover {
+    background-color: rgba(0, 0, 0, 0.08) !important;
 }
 
 /* Add spacing between multiple links */
 .sources-content a + a {
-    margin-left: 0.5rem; /* Add spacing between consecutive links */
+    margin-left: 0.5rem;
 }
 
 /* Specific class for source links to ensure styling takes precedence */
@@ -313,14 +387,14 @@ header h1 {
     padding: 2px 4px;
     border-radius: 3px;
     font-weight: 500 !important;
-    background-color: rgba(255, 255, 255, 0.05) !important;
+    background-color: rgba(0, 0, 0, 0.05) !important;
     transition: all 0.2s ease;
 }
 
 .sources-content .source-link:hover {
     color: var(--primary-color) !important;
     border-bottom: 1px solid var(--primary-color) !important;
-    background-color: rgba(255, 255, 255, 0.1) !important;
+    background-color: rgba(0, 0, 0, 0.1) !important;
 }
 
 /* Markdown formatting styles */
@@ -355,19 +429,27 @@ header h1 {
 }
 
 .message-content code {
-    background-color: rgba(0, 0, 0, 0.2);
+    background-color: rgba(0, 0, 0, 0.1);
     padding: 0.125rem 0.25rem;
     border-radius: 3px;
     font-family: 'Fira Code', 'Consolas', monospace;
     font-size: 0.875em;
 }
 
+:root.light-mode .message-content code {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
 .message-content pre {
-    background-color: rgba(0, 0, 0, 0.2);
+    background-color: rgba(0, 0, 0, 0.1);
     padding: 0.75rem;
     border-radius: 4px;
     overflow-x: auto;
     margin: 0.5rem 0;
+}
+
+:root.light-mode .message-content pre {
+    background-color: rgba(0, 0, 0, 0.05);
 }
 
 .message-content pre code {
@@ -376,7 +458,7 @@ header h1 {
 }
 
 .message-content blockquote {
-    border-left: 3px solid var(--primary);
+    border-left: 3px solid var(--primary-color);
     padding-left: 1rem;
     margin: 0.5rem 0;
     color: var(--text-secondary);
@@ -386,7 +468,7 @@ header h1 {
 .message.welcome-message .message-content {
     background: var(--surface);
     border: 2px solid var(--border-color);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
     position: relative;
 }
 
@@ -412,6 +494,7 @@ header h1 {
     background: var(--background);
     border-top: 1px solid var(--border-color);
     flex-shrink: 0;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 /* Chat Input */
@@ -586,6 +669,7 @@ details[open] .suggested-header::before {
     border-radius: 8px;
     border: 1px solid var(--border-color);
     margin-bottom: 0.75rem;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .stat-item:last-child {
@@ -690,6 +774,7 @@ details[open] .suggested-header::before {
     border-bottom: 1px solid var(--border-color);
     text-transform: none;
     line-height: 1.4;
+    transition: color 0.3s ease, border-color 0.3s ease;
 }
 
 .course-title-item:last-child {
@@ -726,6 +811,7 @@ details[open] .suggested-header::before {
     transition: all 0.2s ease;
     text-align: left;
     width: 100%;
+    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
 }
 
 .suggested-item:focus {
@@ -814,6 +900,14 @@ details[open] .suggested-header::before {
     .suggested-item {
         padding: 0.5rem 0.75rem;
         font-size: 0.8rem;
+    }
+
+    /* Theme toggle on mobile */
+    .theme-toggle {
+        top: 0.75rem;
+        right: 1rem;
+        width: 36px;
+        height: 36px;
     }
 }
 
